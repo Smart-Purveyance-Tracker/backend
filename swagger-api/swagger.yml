@@ -1,0 +1,21 @@
+swagger: "2.0"
+info:
+  title: "test"
+  description: "test"
+  version: 1.0.0
+schemes:
+  - http
+paths:
+  /status:
+    get:
+      operationId: "getStatus"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "returns status of server"
+          schema:
+            properties:
+              status:
+                type: string
+                example: OK
