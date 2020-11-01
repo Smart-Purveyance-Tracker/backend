@@ -45,6 +45,12 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 		GetStatusHandler: GetStatusHandlerFunc(func(params GetStatusParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetStatus has not yet been implemented")
 		}),
+		LoginHandler: LoginHandlerFunc(func(params LoginParams) middleware.Responder {
+			return middleware.NotImplemented("operation Login has not yet been implemented")
+		}),
+		SignupHandler: SignupHandlerFunc(func(params SignupParams) middleware.Responder {
+			return middleware.NotImplemented("operation Signup has not yet been implemented")
+		}),
 	}
 }
 
@@ -81,6 +87,10 @@ type SwaggerAPI struct {
 
 	// GetStatusHandler sets the operation handler for the get status operation
 	GetStatusHandler GetStatusHandler
+	// LoginHandler sets the operation handler for the login operation
+	LoginHandler LoginHandler
+	// SignupHandler sets the operation handler for the signup operation
+	SignupHandler SignupHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -159,6 +169,12 @@ func (o *SwaggerAPI) Validate() error {
 
 	if o.GetStatusHandler == nil {
 		unregistered = append(unregistered, "GetStatusHandler")
+	}
+	if o.LoginHandler == nil {
+		unregistered = append(unregistered, "LoginHandler")
+	}
+	if o.SignupHandler == nil {
+		unregistered = append(unregistered, "SignupHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -252,6 +268,14 @@ func (o *SwaggerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/status"] = NewGetStatus(o.context, o.GetStatusHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/login"] = NewLogin(o.context, o.LoginHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/signup"] = NewSignup(o.context, o.SignupHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

@@ -10,7 +10,12 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
+	"github.com/Smart-Purveyance-Tracker/backend/entity"
+	"github.com/Smart-Purveyance-Tracker/backend/models"
+	"github.com/Smart-Purveyance-Tracker/backend/repository"
 	"github.com/Smart-Purveyance-Tracker/backend/restapi/operations"
+	"github.com/Smart-Purveyance-Tracker/backend/service"
+	"github.com/Smart-Purveyance-Tracker/backend/service/auth"
 )
 
 //go:generate swagger generate server --target ../../backend --name Swagger --spec ../swagger-api/swagger.yml --principal interface{}
@@ -43,11 +48,62 @@ func configureAPI(api *operations.SwaggerAPI) http.Handler {
 		})
 	})
 
+	userRepo := repository.NewUserInMem()
+	userSvc := service.NewUserImpl(userRepo)
+	jwtSvc := auth.NewJWTService([]byte("todo"))
+	api.SignupHandler = operations.SignupHandlerFunc(func(params operations.SignupParams) middleware.Responder {
+		user, err := userSvc.Create(entity.User{
+			Email:    *params.UserInfo.Email,
+			Password: *params.UserInfo.Password,
+		})
+		if err != nil {
+			return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+
+		token, err := jwtSvc.GenerateToken(user.ID)
+		if err != nil {
+			return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+
+		return operations.NewSignupOK().WithPayload(&models.User{
+			ID:    int64(user.ID),
+			Email: user.Email,
+		}).WithAuthenthication("Bearer " + token)
+	})
+
+	api.LoginHandler = operations.LoginHandlerFunc(func(params operations.LoginParams) middleware.Responder {
+		user, err := userSvc.Login(*params.UserInfo.Email, *params.UserInfo.Password)
+		if err != nil {
+			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+		token, err := jwtSvc.GenerateToken(user.ID)
+		if err != nil {
+			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+
+		return operations.NewLoginOK().WithPayload(&models.User{
+			ID:    int64(user.ID),
+			Email: user.Email,
+		}).WithAuthenthication("Bearer " + token)
+	})
+
 	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+}
+
+func getStrPtr(s string) *string {
+	return &s
 }
 
 // The TLS configuration before HTTPS server starts.

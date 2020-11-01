@@ -19,3 +19,86 @@ paths:
               status:
                 type: string
                 example: OK
+  /signup:
+    post:
+      operationId: "signup"
+      consumes:
+        - application/json
+      produces:
+        - "application/json"
+      parameters:
+        - name: "user info"
+          in: body
+          required: true
+          schema:
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          headers:
+            Authenthication:
+              type: string
+          description: "returns user"
+          schema:
+            $ref: '#/definitions/user'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+
+  /login:
+    post:
+      operationId: "login"
+      consumes:
+        - application/json
+      produces:
+        - "application/json"
+      parameters:
+        - name: "user info"
+          in: body
+          required: true
+          schema:
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          headers:
+            Authenthication:
+              type: string
+          description: "returns user"
+          schema:
+            $ref: '#/definitions/user'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+
+definitions:
+  user:
+    type: object
+    properties:
+      id:
+        type: integer
+      email:
+        type: string
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+
+
