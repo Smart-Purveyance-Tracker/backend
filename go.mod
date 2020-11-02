@@ -1,3 +1,4 @@
+// +heroku goVersion go1.15
 module github.com/Smart-Purveyance-Tracker/backend
 
 go 1.15
