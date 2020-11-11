@@ -38,7 +38,8 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
 
-		JSONConsumer: runtime.JSONConsumer(),
+		JSONConsumer:          runtime.JSONConsumer(),
+		MultipartformConsumer: runtime.DiscardConsumer,
 
 		JSONProducer: runtime.JSONProducer(),
 
@@ -47,6 +48,9 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 		}),
 		LoginHandler: LoginHandlerFunc(func(params LoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation Login has not yet been implemented")
+		}),
+		ScanProductsHandler: ScanProductsHandlerFunc(func(params ScanProductsParams) middleware.Responder {
+			return middleware.NotImplemented("operation ScanProducts has not yet been implemented")
 		}),
 		SignupHandler: SignupHandlerFunc(func(params SignupParams) middleware.Responder {
 			return middleware.NotImplemented("operation Signup has not yet been implemented")
@@ -80,6 +84,9 @@ type SwaggerAPI struct {
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
+	// MultipartformConsumer registers a consumer for the following mime types:
+	//   - multipart/form-data
+	MultipartformConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
@@ -89,6 +96,8 @@ type SwaggerAPI struct {
 	GetStatusHandler GetStatusHandler
 	// LoginHandler sets the operation handler for the login operation
 	LoginHandler LoginHandler
+	// ScanProductsHandler sets the operation handler for the scan products operation
+	ScanProductsHandler ScanProductsHandler
 	// SignupHandler sets the operation handler for the signup operation
 	SignupHandler SignupHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -162,6 +171,9 @@ func (o *SwaggerAPI) Validate() error {
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
+	if o.MultipartformConsumer == nil {
+		unregistered = append(unregistered, "MultipartformConsumer")
+	}
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
@@ -172,6 +184,9 @@ func (o *SwaggerAPI) Validate() error {
 	}
 	if o.LoginHandler == nil {
 		unregistered = append(unregistered, "LoginHandler")
+	}
+	if o.ScanProductsHandler == nil {
+		unregistered = append(unregistered, "ScanProductsHandler")
 	}
 	if o.SignupHandler == nil {
 		unregistered = append(unregistered, "SignupHandler")
@@ -207,6 +222,8 @@ func (o *SwaggerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consum
 		switch mt {
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
+		case "multipart/form-data":
+			result["multipart/form-data"] = o.MultipartformConsumer
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -272,6 +289,10 @@ func (o *SwaggerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/login"] = NewLogin(o.context, o.LoginHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/scanProducts"] = NewScanProducts(o.context, o.ScanProductsHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

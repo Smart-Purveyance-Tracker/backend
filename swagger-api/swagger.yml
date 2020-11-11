@@ -85,6 +85,30 @@ paths:
           schema:
             $ref: '#/definitions/error'
 
+  /scanProducts:
+    post:
+      operationId: "scanProducts"
+      summary: Uploads a file.
+      consumes:
+        - multipart/form-data
+      responses:
+        200:
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/product'
+
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+      parameters:
+        - in: formData
+          name: upfile
+          type: file
+          description: The file to upload.
+
 definitions:
   user:
     type: object
@@ -92,6 +116,13 @@ definitions:
       id:
         type: integer
       email:
+        type: string
+  product:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
         type: string
   error:
     type: object

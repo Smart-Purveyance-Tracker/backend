@@ -79,6 +79,39 @@ func init() {
         }
       }
     },
+    "/scanProducts": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "summary": "Uploads a file.",
+        "operationId": "scanProducts",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "The file to upload.",
+            "name": "upfile",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/signup": {
       "post": {
         "consumes": [
@@ -160,6 +193,17 @@ func init() {
       ],
       "properties": {
         "message": {
+          "type": "string"
+        }
+      }
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
           "type": "string"
         }
       }
@@ -239,6 +283,39 @@ func init() {
         }
       }
     },
+    "/scanProducts": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "summary": "Uploads a file.",
+        "operationId": "scanProducts",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "The file to upload.",
+            "name": "upfile",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/signup": {
       "post": {
         "consumes": [
@@ -320,6 +397,17 @@ func init() {
       ],
       "properties": {
         "message": {
+          "type": "string"
+        }
+      }
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
           "type": "string"
         }
       }
