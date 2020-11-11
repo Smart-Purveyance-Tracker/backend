@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/Smart-Purveyance-Tracker/backend/restapi"
-	"github.com/Smart-Purveyance-Tracker/backend/restapi/operations"
+	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/restapi"
+	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/restapi/operations"
 	"github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
 )

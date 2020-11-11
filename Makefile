@@ -1,5 +1,5 @@
 bin/backend:
-	GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o bin/backend ./cmd/server/
+	GOOS=linux GOARCH=amd64 go build -o bin/backend ./cmd/swagger/
 
 .PHONY: generate
 generate:

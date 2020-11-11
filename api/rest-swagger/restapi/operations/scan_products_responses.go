@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/Smart-Purveyance-Tracker/backend/models"
+	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/models"
 )
 
 // ScanProductsOKCode is the HTTP code returned for type ScanProductsOK

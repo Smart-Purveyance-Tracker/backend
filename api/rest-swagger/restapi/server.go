@@ -25,7 +25,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
 
-	"github.com/Smart-Purveyance-Tracker/backend/restapi/operations"
+	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/restapi/operations"
 )
 
 const (

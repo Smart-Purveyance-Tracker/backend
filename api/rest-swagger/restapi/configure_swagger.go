@@ -11,10 +11,10 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/rs/cors"
 
+	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/models"
+	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/restapi/operations"
 	"github.com/Smart-Purveyance-Tracker/backend/entity"
-	"github.com/Smart-Purveyance-Tracker/backend/models"
 	"github.com/Smart-Purveyance-Tracker/backend/repository"
-	"github.com/Smart-Purveyance-Tracker/backend/restapi/operations"
 	"github.com/Smart-Purveyance-Tracker/backend/service"
 	"github.com/Smart-Purveyance-Tracker/backend/service/auth"
 )
