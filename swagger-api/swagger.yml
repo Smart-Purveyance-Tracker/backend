@@ -97,7 +97,30 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/product'
+              $ref: '#/definitions/productCount'
+
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+      parameters:
+        - in: formData
+          name: upfile
+          type: file
+          description: The file to upload.
+  /scanCheck:
+    post:
+      operationId: "scanCheck"
+      summary: Uploads a file.
+      consumes:
+        - multipart/form-data
+      responses:
+        200:
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/productCount'
 
         default:
           description: "error"
@@ -124,6 +147,15 @@ definitions:
         type: integer
       name:
         type: string
+  productCount:
+    type: object
+    properties:
+      count:
+        type: integer
+      product:
+        type: object
+        $ref: '#/definitions/product'
+
   error:
     type: object
     required:

@@ -3,4 +3,5 @@ bin/backend:
 
 .PHONY: generate
 generate:
-	swagger generate server -f swagger-api/swagger.yml
+	 swagger generate server -t api/rest-swagger -f swagger-api/swagger.yml --main-package=./../../../cmd/swagger
+

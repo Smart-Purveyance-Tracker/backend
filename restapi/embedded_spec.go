@@ -79,39 +79,6 @@ func init() {
         }
       }
     },
-    "/scanCheck": {
-      "post": {
-        "consumes": [
-          "multipart/form-data"
-        ],
-        "summary": "Uploads a file.",
-        "operationId": "scanCheck",
-        "parameters": [
-          {
-            "type": "file",
-            "description": "The file to upload.",
-            "name": "upfile",
-            "in": "formData"
-          }
-        ],
-        "responses": {
-          "200": {
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/productCount"
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/scanProducts": {
       "post": {
         "consumes": [
@@ -242,16 +209,8 @@ func init() {
       }
     },
     "productCount": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "integer"
-        },
-        "product": {
-          "type": "object",
-          "$ref": "#/definitions/product"
-        }
-      }
+      "type": "integer",
+      "$ref": "#/definitions/product"
     },
     "user": {
       "type": "object",
@@ -328,39 +287,6 @@ func init() {
         }
       }
     },
-    "/scanCheck": {
-      "post": {
-        "consumes": [
-          "multipart/form-data"
-        ],
-        "summary": "Uploads a file.",
-        "operationId": "scanCheck",
-        "parameters": [
-          {
-            "type": "file",
-            "description": "The file to upload.",
-            "name": "upfile",
-            "in": "formData"
-          }
-        ],
-        "responses": {
-          "200": {
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/productCount"
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/scanProducts": {
       "post": {
         "consumes": [
@@ -491,16 +417,8 @@ func init() {
       }
     },
     "productCount": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "integer"
-        },
-        "product": {
-          "type": "object",
-          "$ref": "#/definitions/product"
-        }
-      }
+      "type": "integer",
+      "$ref": "#/definitions/product"
     },
     "user": {
       "type": "object",

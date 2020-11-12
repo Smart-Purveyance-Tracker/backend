@@ -49,9 +49,6 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 		LoginHandler: LoginHandlerFunc(func(params LoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation Login has not yet been implemented")
 		}),
-		ScanCheckHandler: ScanCheckHandlerFunc(func(params ScanCheckParams) middleware.Responder {
-			return middleware.NotImplemented("operation ScanCheck has not yet been implemented")
-		}),
 		ScanProductsHandler: ScanProductsHandlerFunc(func(params ScanProductsParams) middleware.Responder {
 			return middleware.NotImplemented("operation ScanProducts has not yet been implemented")
 		}),
@@ -99,8 +96,6 @@ type SwaggerAPI struct {
 	GetStatusHandler GetStatusHandler
 	// LoginHandler sets the operation handler for the login operation
 	LoginHandler LoginHandler
-	// ScanCheckHandler sets the operation handler for the scan check operation
-	ScanCheckHandler ScanCheckHandler
 	// ScanProductsHandler sets the operation handler for the scan products operation
 	ScanProductsHandler ScanProductsHandler
 	// SignupHandler sets the operation handler for the signup operation
@@ -189,9 +184,6 @@ func (o *SwaggerAPI) Validate() error {
 	}
 	if o.LoginHandler == nil {
 		unregistered = append(unregistered, "LoginHandler")
-	}
-	if o.ScanCheckHandler == nil {
-		unregistered = append(unregistered, "ScanCheckHandler")
 	}
 	if o.ScanProductsHandler == nil {
 		unregistered = append(unregistered, "ScanProductsHandler")
@@ -297,10 +289,6 @@ func (o *SwaggerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/login"] = NewLogin(o.context, o.LoginHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/scanCheck"] = NewScanCheck(o.context, o.ScanCheckHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

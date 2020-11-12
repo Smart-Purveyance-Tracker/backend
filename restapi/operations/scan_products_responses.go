@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/models"
+	"github.com/Smart-Purveyance-Tracker/backend/models"
 )
 
 // ScanProductsOKCode is the HTTP code returned for type ScanProductsOK
@@ -25,7 +25,7 @@ type ScanProductsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*models.ProductCount `json:"body,omitempty"`
+	Payload []models.ProductCount `json:"body,omitempty"`
 }
 
 // NewScanProductsOK creates ScanProductsOK with default headers values
@@ -35,13 +35,13 @@ func NewScanProductsOK() *ScanProductsOK {
 }
 
 // WithPayload adds the payload to the scan products o k response
-func (o *ScanProductsOK) WithPayload(payload []*models.ProductCount) *ScanProductsOK {
+func (o *ScanProductsOK) WithPayload(payload []models.ProductCount) *ScanProductsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the scan products o k response
-func (o *ScanProductsOK) SetPayload(payload []*models.ProductCount) {
+func (o *ScanProductsOK) SetPayload(payload []models.ProductCount) {
 	o.Payload = payload
 }
 
@@ -52,7 +52,7 @@ func (o *ScanProductsOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 	payload := o.Payload
 	if payload == nil {
 		// return empty array
-		payload = make([]*models.ProductCount, 0, 50)
+		payload = make([]models.ProductCount, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {

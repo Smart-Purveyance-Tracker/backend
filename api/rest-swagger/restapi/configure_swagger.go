@@ -97,10 +97,25 @@ func configureAPI(api *operations.SwaggerAPI) http.Handler {
 	})
 
 	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams) middleware.Responder {
-		return operations.NewScanProductsOK().WithPayload([]*models.Product{
+		return operations.NewScanProductsOK().WithPayload([]*models.ProductCount{
 			{
-				ID:   1,
-				Name: "овощ",
+				Count: 1,
+				Product: &models.Product{
+					ID:   1,
+					Name: "ОВОЩ",
+				},
+			},
+		})
+	})
+
+	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams) middleware.Responder {
+		return operations.NewScanCheckOK().WithPayload([]*models.ProductCount{
+			{
+				Count: 1,
+				Product: &models.Product{
+					ID:   1,
+					Name: "ОВОЩ",
+				},
 			},
 		})
 	})
