@@ -21,7 +21,7 @@ type User struct {
 	Email string `json:"email,omitempty"`
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 }
 
 // Validate validates this user

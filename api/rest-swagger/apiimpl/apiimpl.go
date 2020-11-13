@@ -1,9 +1,6 @@
-// This file is safe to edit. Once it exists it will not be overwritten
-
-package restapi
+package apiimpl
 
 import (
-	"crypto/tls"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -14,18 +11,23 @@ import (
 	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/models"
 	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/restapi/operations"
 	"github.com/Smart-Purveyance-Tracker/backend/entity"
-	"github.com/Smart-Purveyance-Tracker/backend/repository"
 	"github.com/Smart-Purveyance-Tracker/backend/service"
 	"github.com/Smart-Purveyance-Tracker/backend/service/auth"
 )
 
-//go:generate swagger generate server --target ../../backend --name Swagger --spec ../swagger-api/swagger.yml --principal interface{}
-
-func configureFlags(api *operations.SwaggerAPI) {
-	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+type Impl struct {
+	userSvc service.User
+	authSvc auth.Service
 }
 
-func configureAPI(api *operations.SwaggerAPI) http.Handler {
+func NewImpl(userSvc service.User, authSvc auth.Service) *Impl {
+	return &Impl{
+		userSvc: userSvc,
+		authSvc: authSvc,
+	}
+}
+
+func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -49,11 +51,8 @@ func configureAPI(api *operations.SwaggerAPI) http.Handler {
 		})
 	})
 
-	userRepo := repository.NewUserInMem()
-	userSvc := service.NewUserImpl(userRepo)
-	jwtSvc := auth.NewJWTService([]byte("todo"))
 	api.SignupHandler = operations.SignupHandlerFunc(func(params operations.SignupParams) middleware.Responder {
-		user, err := userSvc.Create(entity.User{
+		user, err := impl.userSvc.Create(entity.User{
 			Email:    *params.UserInfo.Email,
 			Password: *params.UserInfo.Password,
 		})
@@ -63,7 +62,7 @@ func configureAPI(api *operations.SwaggerAPI) http.Handler {
 			})
 		}
 
-		token, err := jwtSvc.GenerateToken(user.ID)
+		token, err := impl.authSvc.GenerateToken(user.ID)
 		if err != nil {
 			return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(&models.Error{
 				Message: getStrPtr(err.Error()),
@@ -77,13 +76,13 @@ func configureAPI(api *operations.SwaggerAPI) http.Handler {
 	})
 
 	api.LoginHandler = operations.LoginHandlerFunc(func(params operations.LoginParams) middleware.Responder {
-		user, err := userSvc.Login(*params.UserInfo.Email, *params.UserInfo.Password)
+		user, err := impl.userSvc.Login(*params.UserInfo.Email, *params.UserInfo.Password)
 		if err != nil {
 			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
 				Message: getStrPtr(err.Error()),
 			})
 		}
-		token, err := jwtSvc.GenerateToken(user.ID)
+		token, err := impl.authSvc.GenerateToken(user.ID)
 		if err != nil {
 			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
 				Message: getStrPtr(err.Error()),
@@ -131,28 +130,14 @@ func getStrPtr(s string) *string {
 	return &s
 }
 
-// The TLS configuration before HTTPS server starts.
-func configureTLS(tlsConfig *tls.Config) {
-	// Make all necessary changes to the TLS configuration here.
-}
-
-// As soon as server is initialized but not run yet, this function will be called.
-// If you need to modify a config, store server instance to stop it individually later, this is the place.
-// This function can be called multiple times, depending on the number of serving schemes.
-// scheme value will be set accordingly: "http", "https" or "unix"
-func configureServer(s *http.Server, scheme, addr string) {
-}
-
-// The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
-// The middleware executes after routing but before authentication, binding and validation
-func setupMiddlewares(handler http.Handler) http.Handler {
-	return handler
-}
-
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	handleCORS := cors.Default().Handler
 
 	return handleCORS(handler)
+}
+
+func setupMiddlewares(handler http.Handler) http.Handler {
+	return handler
 }

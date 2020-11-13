@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	GenerateToken(userID uint64) (string, error)
+	GenerateToken(userID string) (string, error)
 	UserIDFromToken(token string) (uint64, error)
 }
 
@@ -23,7 +23,7 @@ func NewJWTService(accessSecret []byte) *JWTService {
 	}
 }
 
-func (s *JWTService) GenerateToken(userID uint64) (string, error) {
+func (s *JWTService) GenerateToken(userID string) (string, error) {
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["user_id"] = userID

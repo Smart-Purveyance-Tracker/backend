@@ -137,14 +137,14 @@ definitions:
     type: object
     properties:
       id:
-        type: integer
+        type: string
       email:
         type: string
   product:
     type: object
     properties:
       id:
-        type: integer
+        type: string
       name:
         type: string
   productCount:
