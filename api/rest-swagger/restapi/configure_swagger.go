@@ -8,15 +8,9 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/runtime/middleware"
 	"github.com/rs/cors"
 
-	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/models"
 	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/restapi/operations"
-	"github.com/Smart-Purveyance-Tracker/backend/entity"
-	"github.com/Smart-Purveyance-Tracker/backend/repository"
-	"github.com/Smart-Purveyance-Tracker/backend/service"
-	"github.com/Smart-Purveyance-Tracker/backend/service/auth"
 )
 
 //go:generate swagger generate server --target ../../backend --name Swagger --spec ../swagger-api/swagger.yml --principal interface{}
@@ -42,83 +36,6 @@ func configureAPI(api *operations.SwaggerAPI) http.Handler {
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
-
-	api.GetStatusHandler = operations.GetStatusHandlerFunc(func(params operations.GetStatusParams) middleware.Responder {
-		return operations.NewGetStatusOK().WithPayload(&operations.GetStatusOKBody{
-			Status: "OK",
-		})
-	})
-
-	userRepo := repository.NewUserInMem()
-	userSvc := service.NewUserImpl(userRepo)
-	jwtSvc := auth.NewJWTService([]byte("todo"))
-	api.SignupHandler = operations.SignupHandlerFunc(func(params operations.SignupParams) middleware.Responder {
-		user, err := userSvc.Create(entity.User{
-			Email:    *params.UserInfo.Email,
-			Password: *params.UserInfo.Password,
-		})
-		if err != nil {
-			return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-
-		token, err := jwtSvc.GenerateToken(user.ID)
-		if err != nil {
-			return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-
-		return operations.NewSignupOK().WithPayload(&models.User{
-			ID:    user.ID,
-			Email: user.Email,
-		}).WithAuthenthication("Bearer " + token)
-	})
-
-	api.LoginHandler = operations.LoginHandlerFunc(func(params operations.LoginParams) middleware.Responder {
-		user, err := userSvc.Login(*params.UserInfo.Email, *params.UserInfo.Password)
-		if err != nil {
-			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-		token, err := jwtSvc.GenerateToken(user.ID)
-		if err != nil {
-			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-
-		return operations.NewLoginOK().WithPayload(&models.User{
-			ID:    user.ID,
-			Email: user.Email,
-		}).WithAuthenthication("Bearer " + token)
-	})
-
-	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams) middleware.Responder {
-		return operations.NewScanProductsOK().WithPayload([]*models.ProductCount{
-			{
-				Count: 1,
-				Product: &models.Product{
-					ID:   "1",
-					Name: "ОВОЩ",
-				},
-			},
-		})
-	})
-
-	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams) middleware.Responder {
-		return operations.NewScanCheckOK().WithPayload([]*models.ProductCount{
-			{
-				Count: 1,
-				Product: &models.Product{
-					ID:   "1",
-					Name: "ОВОЩ",
-				},
-			},
-		})
-	})
 
 	api.PreServerShutdown = func() {}
 
