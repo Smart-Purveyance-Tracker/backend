@@ -10,7 +10,7 @@ import (
 
 type Service interface {
 	GenerateToken(userID string) (string, error)
-	UserIDFromToken(token string) (uint64, error)
+	UserIDFromToken(token string) (string, error)
 }
 
 type JWTService struct {
@@ -32,7 +32,7 @@ func (s *JWTService) GenerateToken(userID string) (string, error) {
 	return at.SignedString(s.accessSecret)
 }
 
-func (s *JWTService) UserIDFromToken(token string) (uint64, error) {
+func (s *JWTService) UserIDFromToken(token string) (string, error) {
 	jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -40,17 +40,17 @@ func (s *JWTService) UserIDFromToken(token string) (uint64, error) {
 		return s.accessSecret, nil
 	})
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return 0, errors.New("no map claims")
+		return "", errors.New("no map claims")
 	}
 
-	userID, ok := claims["user_id"].(uint64)
+	userID, ok := claims["user_id"].(string)
 	if !ok {
-		return 0, errors.New("not valid user id type")
+		return "", errors.New("not valid user id type")
 	}
 
 	return userID, nil

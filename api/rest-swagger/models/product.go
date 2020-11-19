@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Product product
@@ -17,15 +19,47 @@ import (
 // swagger:model product
 type Product struct {
 
+	// bought at
+	// Format: date-time
+	BoughtAt strfmt.DateTime `json:"boughtAt,omitempty"`
+
 	// id
 	ID string `json:"id,omitempty"`
 
+	// in stock
+	InStock bool `json:"inStock,omitempty"`
+
 	// name
 	Name string `json:"name,omitempty"`
+
+	// type
+	Type string `json:"type,omitempty"`
 }
 
 // Validate validates this product
 func (m *Product) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBoughtAt(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Product) validateBoughtAt(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.BoughtAt) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("boughtAt", "body", "date-time", m.BoughtAt.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 

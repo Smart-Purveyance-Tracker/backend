@@ -43,21 +43,40 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
+		CreateProductHandler: CreateProductHandlerFunc(func(params CreateProductParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation CreateProduct has not yet been implemented")
+		}),
+		GetProductHandler: GetProductHandlerFunc(func(params GetProductParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetProduct has not yet been implemented")
+		}),
 		GetStatusHandler: GetStatusHandlerFunc(func(params GetStatusParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetStatus has not yet been implemented")
 		}),
 		LoginHandler: LoginHandlerFunc(func(params LoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation Login has not yet been implemented")
 		}),
-		ScanCheckHandler: ScanCheckHandlerFunc(func(params ScanCheckParams) middleware.Responder {
+		ProductListHandler: ProductListHandlerFunc(func(params ProductListParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation ProductList has not yet been implemented")
+		}),
+		ScanCheckHandler: ScanCheckHandlerFunc(func(params ScanCheckParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation ScanCheck has not yet been implemented")
 		}),
-		ScanProductsHandler: ScanProductsHandlerFunc(func(params ScanProductsParams) middleware.Responder {
+		ScanProductsHandler: ScanProductsHandlerFunc(func(params ScanProductsParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation ScanProducts has not yet been implemented")
 		}),
 		SignupHandler: SignupHandlerFunc(func(params SignupParams) middleware.Responder {
 			return middleware.NotImplemented("operation Signup has not yet been implemented")
 		}),
+		UpdateProductHandler: UpdateProductHandlerFunc(func(params UpdateProductParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation UpdateProduct has not yet been implemented")
+		}),
+
+		// Applies when the "Authenthication" header is set
+		BearerAuth: func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (Bearer) Authenthication from header param [Authenthication] has not yet been implemented")
+		},
+		// default authorizer is authorized meaning no requests are blocked
+		APIAuthorizer: security.Authorized(),
 	}
 }
 
@@ -95,16 +114,31 @@ type SwaggerAPI struct {
 	//   - application/json
 	JSONProducer runtime.Producer
 
+	// BearerAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key Authenthication provided in the header
+	BearerAuth func(string) (interface{}, error)
+
+	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+	APIAuthorizer runtime.Authorizer
+
+	// CreateProductHandler sets the operation handler for the create product operation
+	CreateProductHandler CreateProductHandler
+	// GetProductHandler sets the operation handler for the get product operation
+	GetProductHandler GetProductHandler
 	// GetStatusHandler sets the operation handler for the get status operation
 	GetStatusHandler GetStatusHandler
 	// LoginHandler sets the operation handler for the login operation
 	LoginHandler LoginHandler
+	// ProductListHandler sets the operation handler for the product list operation
+	ProductListHandler ProductListHandler
 	// ScanCheckHandler sets the operation handler for the scan check operation
 	ScanCheckHandler ScanCheckHandler
 	// ScanProductsHandler sets the operation handler for the scan products operation
 	ScanProductsHandler ScanProductsHandler
 	// SignupHandler sets the operation handler for the signup operation
 	SignupHandler SignupHandler
+	// UpdateProductHandler sets the operation handler for the update product operation
+	UpdateProductHandler UpdateProductHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -184,11 +218,24 @@ func (o *SwaggerAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
+	if o.BearerAuth == nil {
+		unregistered = append(unregistered, "AuthenthicationAuth")
+	}
+
+	if o.CreateProductHandler == nil {
+		unregistered = append(unregistered, "CreateProductHandler")
+	}
+	if o.GetProductHandler == nil {
+		unregistered = append(unregistered, "GetProductHandler")
+	}
 	if o.GetStatusHandler == nil {
 		unregistered = append(unregistered, "GetStatusHandler")
 	}
 	if o.LoginHandler == nil {
 		unregistered = append(unregistered, "LoginHandler")
+	}
+	if o.ProductListHandler == nil {
+		unregistered = append(unregistered, "ProductListHandler")
 	}
 	if o.ScanCheckHandler == nil {
 		unregistered = append(unregistered, "ScanCheckHandler")
@@ -198,6 +245,9 @@ func (o *SwaggerAPI) Validate() error {
 	}
 	if o.SignupHandler == nil {
 		unregistered = append(unregistered, "SignupHandler")
+	}
+	if o.UpdateProductHandler == nil {
+		unregistered = append(unregistered, "UpdateProductHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -214,12 +264,21 @@ func (o *SwaggerAPI) ServeErrorFor(operationID string) func(http.ResponseWriter,
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *SwaggerAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-	return nil
+	result := make(map[string]runtime.Authenticator)
+	for name := range schemes {
+		switch name {
+		case "Bearer":
+			scheme := schemes[name]
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.BearerAuth)
+
+		}
+	}
+	return result
 }
 
 // Authorizer returns the registered authorizer
 func (o *SwaggerAPI) Authorizer() runtime.Authorizer {
-	return nil
+	return o.APIAuthorizer
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -289,6 +348,14 @@ func (o *SwaggerAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/product"] = NewCreateProduct(o.context, o.CreateProductHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/product"] = NewGetProduct(o.context, o.GetProductHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -297,6 +364,10 @@ func (o *SwaggerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/login"] = NewLogin(o.context, o.LoginHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/product/list"] = NewProductList(o.context, o.ProductListHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
@@ -309,6 +380,10 @@ func (o *SwaggerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/signup"] = NewSignup(o.context, o.SignupHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/product"] = NewUpdateProduct(o.context, o.UpdateProductHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

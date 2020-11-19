@@ -79,8 +79,132 @@ func init() {
         }
       }
     },
+    "/product": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "getProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "productID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "get product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "updateProduct",
+        "responses": {
+          "200": {
+            "description": "update product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "operationId": "createProduct",
+        "parameters": [
+          {
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "creates product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/product/list": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "productList",
+        "responses": {
+          "200": {
+            "description": "returns list of product",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/scanCheck": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "consumes": [
           "multipart/form-data"
         ],
@@ -114,6 +238,11 @@ func init() {
     },
     "/scanProducts": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "consumes": [
           "multipart/form-data"
         ],
@@ -233,10 +362,20 @@ func init() {
     "product": {
       "type": "object",
       "properties": {
+        "boughtAt": {
+          "type": "string",
+          "format": "date-time"
+        },
         "id": {
           "type": "string"
         },
+        "inStock": {
+          "type": "boolean"
+        },
         "name": {
+          "type": "string"
+        },
+        "type": {
           "type": "string"
         }
       }
@@ -263,6 +402,13 @@ func init() {
           "type": "string"
         }
       }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authenthication",
+      "in": "header"
     }
   }
 }`))
@@ -328,8 +474,132 @@ func init() {
         }
       }
     },
+    "/product": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "getProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "productID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "get product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "updateProduct",
+        "responses": {
+          "200": {
+            "description": "update product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "operationId": "createProduct",
+        "parameters": [
+          {
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "creates product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/product/list": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "productList",
+        "responses": {
+          "200": {
+            "description": "returns list of product",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/scanCheck": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "consumes": [
           "multipart/form-data"
         ],
@@ -363,6 +633,11 @@ func init() {
     },
     "/scanProducts": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "consumes": [
           "multipart/form-data"
         ],
@@ -482,10 +757,20 @@ func init() {
     "product": {
       "type": "object",
       "properties": {
+        "boughtAt": {
+          "type": "string",
+          "format": "date-time"
+        },
         "id": {
           "type": "string"
         },
+        "inStock": {
+          "type": "boolean"
+        },
         "name": {
+          "type": "string"
+        },
+        "type": {
           "type": "string"
         }
       }
@@ -512,6 +797,13 @@ func init() {
           "type": "string"
         }
       }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authenthication",
+      "in": "header"
     }
   }
 }`))

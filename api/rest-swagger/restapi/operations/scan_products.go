@@ -12,16 +12,16 @@ import (
 )
 
 // ScanProductsHandlerFunc turns a function with the right signature into a scan products handler
-type ScanProductsHandlerFunc func(ScanProductsParams) middleware.Responder
+type ScanProductsHandlerFunc func(ScanProductsParams, interface{}) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn ScanProductsHandlerFunc) Handle(params ScanProductsParams) middleware.Responder {
-	return fn(params)
+func (fn ScanProductsHandlerFunc) Handle(params ScanProductsParams, principal interface{}) middleware.Responder {
+	return fn(params, principal)
 }
 
 // ScanProductsHandler interface for that can handle valid scan products params
 type ScanProductsHandler interface {
-	Handle(ScanProductsParams) middleware.Responder
+	Handle(ScanProductsParams, interface{}) middleware.Responder
 }
 
 // NewScanProducts creates a new http.Handler for the scan products operation
@@ -46,12 +46,25 @@ func (o *ScanProducts) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var Params = NewScanProductsParams()
 
+	uprinc, aCtx, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	if aCtx != nil {
+		r = aCtx
+	}
+	var principal interface{}
+	if uprinc != nil {
+		principal = uprinc
+	}
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(Params) // actually handle the request
+	res := o.Handler.Handle(Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

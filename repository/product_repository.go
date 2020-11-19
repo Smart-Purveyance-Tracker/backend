@@ -11,15 +11,21 @@ import (
 )
 
 type Product interface {
-	Insert(user entity.User) (entity.User, error)
-	Find(id string) (entity.User, error)
+	Insert(product entity.Product) (entity.Product, error)
+	Find(id string) (entity.Product, error)
+	List(args ProductListArgs) ([]entity.Product, error)
+}
+
+type ProductListArgs struct {
+	UserID *string
 }
 
 type ProductMongoDB struct {
 	collection *mongo.Collection
 }
 
-func NewProductMongoDB(collection *mongo.Collection) *ProductMongoDB {
+func NewProductMongoDB(client *mongo.Client) *ProductMongoDB {
+	collection := client.Database("purveyance").Collection("products")
 	return &ProductMongoDB{collection: collection}
 }
 
@@ -36,4 +42,30 @@ func (p *ProductMongoDB) Find(id string) (entity.Product, error) {
 	var product entity.Product
 	err := p.collection.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&product)
 	return product, err
+}
+
+func (p *ProductMongoDB) List(args ProductListArgs) ([]entity.Product, error) {
+	filter := bson.M{}
+	if args.UserID != nil {
+		filter = bson.M{
+			"userId": *args.UserID,
+		}
+	}
+
+	cur, err := p.collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var products []entity.Product
+	for cur.Next(context.TODO()) {
+		var p entity.Product
+		err = cur.Decode(&p)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, p)
+	}
+
+	return products, nil
 }

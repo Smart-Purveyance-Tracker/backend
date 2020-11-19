@@ -3,6 +3,11 @@ info:
   title: "test"
   description: "test"
   version: 1.0.0
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authenthication
+    in: header
 schemes:
   - http
 paths:
@@ -89,6 +94,8 @@ paths:
     post:
       operationId: "scanProducts"
       summary: Uploads a file.
+      security:
+        - Bearer: [ ]
       consumes:
         - multipart/form-data
       responses:
@@ -112,6 +119,8 @@ paths:
     post:
       operationId: "scanCheck"
       summary: Uploads a file.
+      security:
+        - Bearer: [ ]
       consumes:
         - multipart/form-data
       responses:
@@ -132,6 +141,79 @@ paths:
           type: file
           description: The file to upload.
 
+  /product:
+    post:
+      operationId: "createProduct"
+      security:
+        - Bearer: [ ]
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: product
+          required: true
+          schema:
+            $ref: '#/definitions/product'
+          in: body
+      responses:
+        200:
+          description: "creates product"
+          schema:
+            $ref: '#/definitions/product'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+
+    get:
+      operationId: "getProduct"
+      security:
+        - Bearer: [ ]
+      parameters:
+        - name: productID
+          type: string
+          required: true
+          in: query
+      responses:
+        200:
+          description: "get product"
+          schema:
+            $ref: '#/definitions/product'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+    put:
+      operationId: "updateProduct"
+      security:
+        - Bearer: [ ]
+      responses:
+        200:
+          description: "update product"
+          schema:
+            $ref: '#/definitions/product'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+
+  /product/list:
+    get:
+      operationId: "productList"
+      security:
+        - Bearer: [ ]
+      responses:
+        200:
+          description: "returns list of product"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/product'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
 definitions:
   user:
     type: object
@@ -147,6 +229,14 @@ definitions:
         type: string
       name:
         type: string
+      type:
+        type: string
+      boughtAt:
+        type: string
+        format: "date-time"
+      inStock:
+        type: boolean
+
   productCount:
     type: object
     properties:

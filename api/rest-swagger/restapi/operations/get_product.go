@@ -11,40 +11,40 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
-// ScanCheckHandlerFunc turns a function with the right signature into a scan check handler
-type ScanCheckHandlerFunc func(ScanCheckParams, interface{}) middleware.Responder
+// GetProductHandlerFunc turns a function with the right signature into a get product handler
+type GetProductHandlerFunc func(GetProductParams, interface{}) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn ScanCheckHandlerFunc) Handle(params ScanCheckParams, principal interface{}) middleware.Responder {
+func (fn GetProductHandlerFunc) Handle(params GetProductParams, principal interface{}) middleware.Responder {
 	return fn(params, principal)
 }
 
-// ScanCheckHandler interface for that can handle valid scan check params
-type ScanCheckHandler interface {
-	Handle(ScanCheckParams, interface{}) middleware.Responder
+// GetProductHandler interface for that can handle valid get product params
+type GetProductHandler interface {
+	Handle(GetProductParams, interface{}) middleware.Responder
 }
 
-// NewScanCheck creates a new http.Handler for the scan check operation
-func NewScanCheck(ctx *middleware.Context, handler ScanCheckHandler) *ScanCheck {
-	return &ScanCheck{Context: ctx, Handler: handler}
+// NewGetProduct creates a new http.Handler for the get product operation
+func NewGetProduct(ctx *middleware.Context, handler GetProductHandler) *GetProduct {
+	return &GetProduct{Context: ctx, Handler: handler}
 }
 
-/*ScanCheck swagger:route POST /scanCheck scanCheck
+/*GetProduct swagger:route GET /product getProduct
 
-Uploads a file.
+GetProduct get product API
 
 */
-type ScanCheck struct {
+type GetProduct struct {
 	Context *middleware.Context
-	Handler ScanCheckHandler
+	Handler GetProductHandler
 }
 
-func (o *ScanCheck) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *GetProduct) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewScanCheckParams()
+	var Params = NewGetProductParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {

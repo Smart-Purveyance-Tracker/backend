@@ -1,29 +1,36 @@
 package apiimpl
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/rs/cors"
 
 	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/models"
 	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/restapi/operations"
 	"github.com/Smart-Purveyance-Tracker/backend/entity"
+	"github.com/Smart-Purveyance-Tracker/backend/repository"
 	"github.com/Smart-Purveyance-Tracker/backend/service"
 	"github.com/Smart-Purveyance-Tracker/backend/service/auth"
 )
 
 type Impl struct {
-	userSvc service.User
-	authSvc auth.Service
+	userSvc    service.User
+	productSvc service.Product
+	authSvc    auth.Service
 }
 
-func NewImpl(userSvc service.User, authSvc auth.Service) *Impl {
+func NewImpl(userSvc service.User, authSvc auth.Service, productSvc service.Product) *Impl {
 	return &Impl{
-		userSvc: userSvc,
-		authSvc: authSvc,
+		userSvc:    userSvc,
+		authSvc:    authSvc,
+		productSvc: productSvc,
 	}
 }
 
@@ -44,6 +51,18 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
+
+	api.BearerAuth = func(s string) (interface{}, error) {
+		ss := strings.Split(s, " ")
+		if len(ss) != 2 {
+			return nil, fmt.Errorf("can't parse token")
+		}
+		userID, err := impl.authSvc.UserIDFromToken(ss[1])
+		if err != nil {
+			return nil, err
+		}
+		return userID, nil
+	}
 
 	api.GetStatusHandler = operations.GetStatusHandlerFunc(func(params operations.GetStatusParams) middleware.Responder {
 		return operations.NewGetStatusOK().WithPayload(&operations.GetStatusOKBody{
@@ -95,7 +114,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 		}).WithAuthenthication("Bearer " + token)
 	})
 
-	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams) middleware.Responder {
+	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams, _ interface{}) middleware.Responder {
 		return operations.NewScanProductsOK().WithPayload([]*models.ProductCount{
 			{
 				Count: 1,
@@ -107,7 +126,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 		})
 	})
 
-	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams) middleware.Responder {
+	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, _ interface{}) middleware.Responder {
 		return operations.NewScanCheckOK().WithPayload([]*models.ProductCount{
 			{
 				Count: 1,
@@ -119,6 +138,41 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 		})
 	})
 
+	api.GetProductHandler = operations.GetProductHandlerFunc(func(params operations.GetProductParams, _ interface{}) middleware.Responder {
+		product, err := impl.productSvc.ByID(params.ProductID)
+		if err != nil {
+			return operations.NewGetProductDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+
+		return operations.NewGetProductOK().WithPayload(toModelProduct(product))
+	})
+
+	api.CreateProductHandler = operations.CreateProductHandlerFunc(func(params operations.CreateProductParams, id interface{}) middleware.Responder {
+		uID := id.(string)
+		product, err := impl.productSvc.Create(toEntity(params.Product, uID))
+		if err != nil {
+			return operations.NewCreateProductDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+		return operations.NewCreateProductOK().WithPayload(toModelProduct(product))
+	})
+
+	api.ProductListHandler = operations.ProductListHandlerFunc(func(params operations.ProductListParams, id interface{}) middleware.Responder {
+		uID := id.(string)
+		products, err := impl.productSvc.List(repository.ProductListArgs{
+			UserID: &uID,
+		})
+		if err != nil {
+			return operations.NewProductListDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+		return operations.NewProductListOK().WithPayload(toModelProducts(products))
+	})
+
 	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
@@ -128,6 +182,35 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 
 func getStrPtr(s string) *string {
 	return &s
+}
+
+func toModelProduct(product entity.Product) *models.Product {
+	return &models.Product{
+		ID:       product.ID,
+		BoughtAt: strfmt.DateTime(product.BoughtAt),
+		InStock:  product.InStock,
+		Name:     product.Name,
+		Type:     product.Type,
+	}
+}
+
+func toEntity(product *models.Product, userID string) entity.Product {
+	boughAt := time.Time(product.BoughtAt)
+	return entity.Product{
+		Name:     product.Name,
+		Type:     product.Type,
+		BoughtAt: boughAt,
+		UserID:   userID,
+		InStock:  product.InStock,
+	}
+}
+
+func toModelProducts(pp []entity.Product) []*models.Product {
+	res := make([]*models.Product, 0, len(pp))
+	for _, p := range pp {
+		res = append(res, toModelProduct(p))
+	}
+	return res
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.

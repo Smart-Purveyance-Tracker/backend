@@ -1,12 +1,19 @@
 package entity
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Product struct {
-	ID string `json:"id" bson:"-"`
+	ID       string    `json:"id" bson:"-"`
+	Name     string    `json:"name" bson:"name"`
+	Type     string    `json:"type" bson:"type"`
+	BoughtAt time.Time `json:"boughtAt" bson:"boughtAt"`
+	UserID   string    `json:"userId" bson:"userId"`
+	InStock  bool      `json:"inStock" bson:"inStock"`
 }
 
 func (p *Product) UnmarshalBSON(data []byte) error {
