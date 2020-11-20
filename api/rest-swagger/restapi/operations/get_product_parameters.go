@@ -9,10 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/validate"
 )
 
 // NewGetProductParams creates a new GetProductParams object
@@ -33,7 +31,7 @@ type GetProductParams struct {
 
 	/*
 	  Required: true
-	  In: query
+	  In: path
 	*/
 	ProductID string
 }
@@ -47,10 +45,8 @@ func (o *GetProductParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	o.HTTPRequest = r
 
-	qs := runtime.Values(r.URL.Query())
-
-	qProductID, qhkProductID, _ := qs.GetOK("productID")
-	if err := o.bindProductID(qProductID, qhkProductID, route.Formats); err != nil {
+	rProductID, rhkProductID, _ := route.Params.GetOK("productID")
+	if err := o.bindProductID(rProductID, rhkProductID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -60,21 +56,15 @@ func (o *GetProductParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
-// bindProductID binds and validates parameter ProductID from query.
+// bindProductID binds and validates parameter ProductID from path.
 func (o *GetProductParams) bindProductID(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("productID", "query", rawData)
-	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
 	// Required: true
-	// AllowEmptyValue: false
-	if err := validate.RequiredString("productID", "query", raw); err != nil {
-		return err
-	}
+	// Parameter is provided by construction from the route
 
 	o.ProductID = raw
 

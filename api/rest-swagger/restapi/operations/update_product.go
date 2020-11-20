@@ -29,7 +29,7 @@ func NewUpdateProduct(ctx *middleware.Context, handler UpdateProductHandler) *Up
 	return &UpdateProduct{Context: ctx, Handler: handler}
 }
 
-/*UpdateProduct swagger:route PUT /product updateProduct
+/*UpdateProduct swagger:route PUT /product/{productID} updateProduct
 
 UpdateProduct update product API
 

@@ -79,7 +79,34 @@ func init() {
         }
       }
     },
-    "/product": {
+    "/product/list": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "productList",
+        "responses": {
+          "200": {
+            "description": "returns list of product",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/product/{productID}": {
       "get": {
         "security": [
           {
@@ -91,7 +118,7 @@ func init() {
           {
             "type": "string",
             "name": "productID",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -116,7 +143,29 @@ func init() {
             "Bearer": []
           }
         ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
         "operationId": "updateProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "productID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "update product",
@@ -169,34 +218,15 @@ func init() {
             }
           }
         }
-      }
-    },
-    "/product/list": {
-      "get": {
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "operationId": "productList",
-        "responses": {
-          "200": {
-            "description": "returns list of product",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/product"
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "productID",
+          "in": "path",
+          "required": true
         }
-      }
+      ]
     },
     "/scanCheck": {
       "post": {
@@ -474,7 +504,34 @@ func init() {
         }
       }
     },
-    "/product": {
+    "/product/list": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "productList",
+        "responses": {
+          "200": {
+            "description": "returns list of product",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/product/{productID}": {
       "get": {
         "security": [
           {
@@ -486,7 +543,7 @@ func init() {
           {
             "type": "string",
             "name": "productID",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -511,7 +568,29 @@ func init() {
             "Bearer": []
           }
         ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
         "operationId": "updateProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "productID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "update product",
@@ -564,34 +643,15 @@ func init() {
             }
           }
         }
-      }
-    },
-    "/product/list": {
-      "get": {
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "operationId": "productList",
-        "responses": {
-          "200": {
-            "description": "returns list of product",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/product"
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "productID",
+          "in": "path",
+          "required": true
         }
-      }
+      ]
     },
     "/scanCheck": {
       "post": {

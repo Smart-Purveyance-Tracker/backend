@@ -29,7 +29,7 @@ func NewCreateProduct(ctx *middleware.Context, handler CreateProductHandler) *Cr
 	return &CreateProduct{Context: ctx, Handler: handler}
 }
 
-/*CreateProduct swagger:route POST /product createProduct
+/*CreateProduct swagger:route POST /product/{productID} createProduct
 
 CreateProduct create product API
 

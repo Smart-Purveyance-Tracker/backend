@@ -141,7 +141,30 @@ paths:
           type: file
           description: The file to upload.
 
-  /product:
+  /product/{productID}:
+    parameters:
+      - name: productID
+        in: path
+        type: string
+        required: true
+    get:
+      operationId: "getProduct"
+      security:
+        - Bearer: [ ]
+      parameters:
+        - name: productID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: "get product"
+          schema:
+            $ref: '#/definitions/product'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
     post:
       operationId: "createProduct"
       security:
@@ -165,29 +188,24 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/error'
-
-    get:
-      operationId: "getProduct"
-      security:
-        - Bearer: [ ]
-      parameters:
-        - name: productID
-          type: string
-          required: true
-          in: query
-      responses:
-        200:
-          description: "get product"
-          schema:
-            $ref: '#/definitions/product'
-        default:
-          description: "error"
-          schema:
-            $ref: '#/definitions/error'
     put:
       operationId: "updateProduct"
       security:
         - Bearer: [ ]
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: productID
+          type: string
+          required: true
+          in: path
+        - name: product
+          required: true
+          schema:
+            $ref: '#/definitions/product'
+          in: body
       responses:
         200:
           description: "update product"

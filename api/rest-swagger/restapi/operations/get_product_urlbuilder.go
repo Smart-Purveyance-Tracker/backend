@@ -9,6 +9,7 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+	"strings"
 )
 
 // GetProductURL generates an URL for the get product operation
@@ -39,19 +40,17 @@ func (o *GetProductURL) SetBasePath(bp string) {
 func (o *GetProductURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/product"
+	var _path = "/product/{productID}"
+
+	productID := o.ProductID
+	if productID != "" {
+		_path = strings.Replace(_path, "{productID}", productID, -1)
+	} else {
+		return nil, errors.New("productId is required on GetProductURL")
+	}
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
-
-	qs := make(url.Values)
-
-	productIDQ := o.ProductID
-	if productIDQ != "" {
-		qs.Set("productID", productIDQ)
-	}
-
-	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

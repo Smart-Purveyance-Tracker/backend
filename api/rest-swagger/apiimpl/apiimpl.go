@@ -149,6 +149,18 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 		return operations.NewGetProductOK().WithPayload(toModelProduct(product))
 	})
 
+	api.UpdateProductHandler = operations.UpdateProductHandlerFunc(func(params operations.UpdateProductParams, id interface{}) middleware.Responder {
+		uID := id.(string)
+		params.Product.ID = params.ProductID
+		product, err := impl.productSvc.Update(toEntity(params.Product, uID))
+		if err != nil {
+			return operations.NewUpdateProductDefault(http.StatusInternalServerError).WithPayload(&models.Error{
+				Message: getStrPtr(err.Error()),
+			})
+		}
+		return operations.NewCreateProductOK().WithPayload(toModelProduct(product))
+	})
+
 	api.CreateProductHandler = operations.CreateProductHandlerFunc(func(params operations.CreateProductParams, id interface{}) middleware.Responder {
 		uID := id.(string)
 		product, err := impl.productSvc.Create(toEntity(params.Product, uID))
@@ -197,6 +209,7 @@ func toModelProduct(product entity.Product) *models.Product {
 func toEntity(product *models.Product, userID string) entity.Product {
 	boughAt := time.Time(product.BoughtAt)
 	return entity.Product{
+		ID:       product.ID,
 		Name:     product.Name,
 		Type:     product.Type,
 		BoughtAt: boughAt,

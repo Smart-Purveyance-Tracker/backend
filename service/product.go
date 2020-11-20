@@ -9,6 +9,7 @@ type Product interface {
 	ByID(id string) (entity.Product, error)
 	Create(product entity.Product) (entity.Product, error)
 	List(args repository.ProductListArgs) ([]entity.Product, error)
+	Update(product entity.Product) (entity.Product, error)
 }
 
 type ProductImpl struct {
@@ -27,6 +28,10 @@ func (p *ProductImpl) ByID(id string) (entity.Product, error) {
 
 func (p *ProductImpl) Create(product entity.Product) (entity.Product, error) {
 	return p.productRepo.Insert(product)
+}
+
+func (p *ProductImpl) Update(product entity.Product) (entity.Product, error) {
+	return p.productRepo.Update(product)
 }
 
 func (p *ProductImpl) List(args repository.ProductListArgs) ([]entity.Product, error) {

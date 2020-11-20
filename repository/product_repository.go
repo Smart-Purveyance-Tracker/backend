@@ -13,6 +13,7 @@ import (
 type Product interface {
 	Insert(product entity.Product) (entity.Product, error)
 	Find(id string) (entity.Product, error)
+	Update(product entity.Product) (entity.Product, error)
 	List(args ProductListArgs) ([]entity.Product, error)
 }
 
@@ -40,7 +41,28 @@ func (p *ProductMongoDB) Insert(product entity.Product) (entity.Product, error) 
 
 func (p *ProductMongoDB) Find(id string) (entity.Product, error) {
 	var product entity.Product
-	err := p.collection.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&product)
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return entity.Product{}, err
+	}
+	err = p.collection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&product)
+	return product, err
+}
+
+func (p *ProductMongoDB) Update(product entity.Product) (entity.Product, error) {
+	update := bson.M{
+		"$set": bson.M{
+			"name":     product.Name,
+			"type":     product.Type,
+			"boughtAt": product.BoughtAt,
+			"inStock":  product.InStock,
+		},
+	}
+	objID, err := primitive.ObjectIDFromHex(product.ID)
+	if err != nil {
+		return entity.Product{}, err
+	}
+	_, err = p.collection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
 	return product, err
 }
 

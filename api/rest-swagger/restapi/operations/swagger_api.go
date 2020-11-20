@@ -351,11 +351,11 @@ func (o *SwaggerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/product"] = NewCreateProduct(o.context, o.CreateProductHandler)
+	o.handlers["POST"]["/product/{productID}"] = NewCreateProduct(o.context, o.CreateProductHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/product"] = NewGetProduct(o.context, o.GetProductHandler)
+	o.handlers["GET"]["/product/{productID}"] = NewGetProduct(o.context, o.GetProductHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -383,7 +383,7 @@ func (o *SwaggerAPI) initHandlerCache() {
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
-	o.handlers["PUT"]["/product"] = NewUpdateProduct(o.context, o.UpdateProductHandler)
+	o.handlers["PUT"]["/product/{productID}"] = NewUpdateProduct(o.context, o.UpdateProductHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

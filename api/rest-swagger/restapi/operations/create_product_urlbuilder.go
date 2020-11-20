@@ -9,11 +9,16 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+	"strings"
 )
 
 // CreateProductURL generates an URL for the create product operation
 type CreateProductURL struct {
+	ProductID string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -35,7 +40,14 @@ func (o *CreateProductURL) SetBasePath(bp string) {
 func (o *CreateProductURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/product"
+	var _path = "/product/{productID}"
+
+	productID := o.ProductID
+	if productID != "" {
+		_path = strings.Replace(_path, "{productID}", productID, -1)
+	} else {
+		return nil, errors.New("productId is required on CreateProductURL")
+	}
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)

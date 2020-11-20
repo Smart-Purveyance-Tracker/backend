@@ -6,10 +6,17 @@ package operations
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+	"io"
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
+
+	"github.com/Smart-Purveyance-Tracker/backend/api/rest-swagger/models"
 )
 
 // NewUpdateProductParams creates a new UpdateProductParams object
@@ -27,6 +34,17 @@ type UpdateProductParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
+
+	/*
+	  Required: true
+	  In: body
+	*/
+	Product *models.Product
+	/*
+	  Required: true
+	  In: path
+	*/
+	ProductID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -38,8 +56,55 @@ func (o *UpdateProductParams) BindRequest(r *http.Request, route *middleware.Mat
 
 	o.HTTPRequest = r
 
+	if runtime.HasBody(r) {
+		defer r.Body.Close()
+		var body models.Product
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			if err == io.EOF {
+				res = append(res, errors.Required("product", "body", ""))
+			} else {
+				res = append(res, errors.NewParseError("product", "body", "", err))
+			}
+		} else {
+			// validate body object
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.Product = &body
+			}
+		}
+	} else {
+		res = append(res, errors.Required("product", "body", ""))
+	}
+	rProductID, rhkProductID, _ := route.Params.GetOK("productID")
+	if err := o.bindProductID(rProductID, rhkProductID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindProductID binds and validates parameter ProductID from path.
+func (o *UpdateProductParams) bindProductID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
+
+	o.ProductID = raw
+
 	return nil
 }
