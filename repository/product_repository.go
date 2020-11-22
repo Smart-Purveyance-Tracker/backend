@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,6 +20,7 @@ type Product interface {
 
 type ProductListArgs struct {
 	UserID *string
+	Date   *time.Time
 }
 
 type ProductMongoDB struct {
@@ -69,8 +71,14 @@ func (p *ProductMongoDB) Update(product entity.Product) (entity.Product, error) 
 func (p *ProductMongoDB) List(args ProductListArgs) ([]entity.Product, error) {
 	filter := bson.M{}
 	if args.UserID != nil {
-		filter = bson.M{
-			"userId": *args.UserID,
+		filter["userId"] = *args.UserID
+	}
+	if args.Date != nil {
+		date := *args.Date
+		rounded := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
+		filter["boughtAt"] = bson.M{
+			"$gte": rounded,
+			"$lt":  rounded.Add(time.Hour * 24),
 		}
 	}
 

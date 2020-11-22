@@ -221,6 +221,11 @@ paths:
       operationId: "productList"
       security:
         - Bearer: [ ]
+      parameters:
+        - in: query
+          name: "date"
+          type: string
+          format: "date"
       responses:
         200:
           description: "returns list of product"

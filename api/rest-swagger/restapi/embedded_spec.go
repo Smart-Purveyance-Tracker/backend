@@ -87,6 +87,14 @@ func init() {
           }
         ],
         "operationId": "productList",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "date",
+            "name": "date",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "returns list of product",
@@ -512,6 +520,14 @@ func init() {
           }
         ],
         "operationId": "productList",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "date",
+            "name": "date",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "returns list of product",

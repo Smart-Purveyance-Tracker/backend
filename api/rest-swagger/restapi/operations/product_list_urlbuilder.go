@@ -9,11 +9,17 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+
+	"github.com/go-openapi/strfmt"
 )
 
 // ProductListURL generates an URL for the product list operation
 type ProductListURL struct {
+	Date *strfmt.Date
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -39,6 +45,18 @@ func (o *ProductListURL) Build() (*url.URL, error) {
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var dateQ string
+	if o.Date != nil {
+		dateQ = o.Date.String()
+	}
+	if dateQ != "" {
+		qs.Set("date", dateQ)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

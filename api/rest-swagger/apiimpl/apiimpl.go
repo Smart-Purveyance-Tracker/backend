@@ -176,6 +176,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 		uID := id.(string)
 		products, err := impl.productSvc.List(repository.ProductListArgs{
 			UserID: &uID,
+			Date:   (*time.Time)(params.Date),
 		})
 		if err != nil {
 			return operations.NewProductListDefault(http.StatusInternalServerError).WithPayload(&models.Error{
