@@ -254,6 +254,13 @@ func init() {
             "description": "The file to upload.",
             "name": "upfile",
             "in": "formData"
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when scan was done",
+            "name": "scanDate",
+            "in": "query"
           }
         ],
         "responses": {
@@ -292,6 +299,13 @@ func init() {
             "description": "The file to upload.",
             "name": "upfile",
             "in": "formData"
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when scan was done",
+            "name": "scanDate",
+            "in": "query"
           }
         ],
         "responses": {
@@ -687,6 +701,13 @@ func init() {
             "description": "The file to upload.",
             "name": "upfile",
             "in": "formData"
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when scan was done",
+            "name": "scanDate",
+            "in": "query"
           }
         ],
         "responses": {
@@ -725,6 +746,13 @@ func init() {
             "description": "The file to upload.",
             "name": "upfile",
             "in": "formData"
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when scan was done",
+            "name": "scanDate",
+            "in": "query"
           }
         ],
         "responses": {

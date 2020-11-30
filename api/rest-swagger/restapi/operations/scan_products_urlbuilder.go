@@ -9,11 +9,17 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+
+	"github.com/go-openapi/strfmt"
 )
 
 // ScanProductsURL generates an URL for the scan products operation
 type ScanProductsURL struct {
+	ScanDate *strfmt.DateTime
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -39,6 +45,18 @@ func (o *ScanProductsURL) Build() (*url.URL, error) {
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var scanDateQ string
+	if o.ScanDate != nil {
+		scanDateQ = o.ScanDate.String()
+	}
+	if scanDateQ != "" {
+		qs.Set("scanDate", scanDateQ)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

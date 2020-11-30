@@ -20,21 +20,101 @@ import (
 	"github.com/Smart-Purveyance-Tracker/backend/service/auth"
 )
 
-type Impl struct {
+type Server struct {
 	userSvc    service.User
 	productSvc service.Product
 	authSvc    auth.Service
 }
 
-func NewImpl(userSvc service.User, authSvc auth.Service, productSvc service.Product) *Impl {
-	return &Impl{
+func NewServer(userSvc service.User, authSvc auth.Service, productSvc service.Product) *Server {
+	return &Server{
 		userSvc:    userSvc,
 		authSvc:    authSvc,
 		productSvc: productSvc,
 	}
 }
 
-func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
+func (s *Server) login(params operations.LoginParams) middleware.Responder {
+	user, err := s.userSvc.Login(*params.UserInfo.Email, *params.UserInfo.Password)
+	if err != nil {
+		return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+	token, err := s.authSvc.GenerateToken(user.ID)
+	if err != nil {
+		return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+
+	return operations.NewLoginOK().WithPayload(&models.User{
+		ID:    user.ID,
+		Email: user.Email,
+	}).WithAuthenthication("Bearer " + token)
+}
+
+func (s *Server) signup(params operations.SignupParams) middleware.Responder {
+	user, err := s.userSvc.Create(entity.User{
+		Email:    *params.UserInfo.Email,
+		Password: *params.UserInfo.Password,
+	})
+	if err != nil {
+		return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+
+	token, err := s.authSvc.GenerateToken(user.ID)
+	if err != nil {
+		return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+
+	return operations.NewSignupOK().WithPayload(&models.User{
+		ID:    user.ID,
+		Email: user.Email,
+	}).WithAuthenthication("Bearer " + token)
+}
+
+// todo: add check for user id
+func (s *Server) getProduct(params operations.GetProductParams) middleware.Responder {
+	product, err := s.productSvc.ByID(params.ProductID)
+	if err != nil {
+		return operations.NewGetProductDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+
+	return operations.NewGetProductOK().WithPayload(toModelProduct(product))
+}
+
+func (s *Server) updateProduct(params operations.UpdateProductParams, userID string) middleware.Responder {
+	params.Product.ID = params.ProductID
+	product, err := s.productSvc.Update(toEntityProduct(params.Product, userID))
+	if err != nil {
+		return operations.NewUpdateProductDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+	return operations.NewCreateProductOK().WithPayload(toModelProduct(product))
+}
+
+func (s *Server) getProductList(params operations.ProductListParams, userID string) middleware.Responder {
+	products, err := s.productSvc.List(repository.ProductListArgs{
+		UserID: &userID,
+		Date:   (*time.Time)(params.Date),
+	})
+	if err != nil {
+		return operations.NewProductListDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+	return operations.NewProductListOK().WithPayload(toModelProducts(products))
+}
+
+func (s *Server) createProduct(params operations.CreateProductParams, userID string) middleware.Responder {
+	product, err := s.productSvc.Create(toEntityProduct(params.Product, userID))
+	if err != nil {
+		return operations.NewCreateProductDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	}
+	return operations.NewCreateProductOK().WithPayload(toModelProduct(product))
+}
+
+func newAPIErr(msg string) *models.Error {
+	return &models.Error{
+		Message: &msg,
+	}
+}
+
+func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -71,119 +151,53 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 	})
 
 	api.SignupHandler = operations.SignupHandlerFunc(func(params operations.SignupParams) middleware.Responder {
-		user, err := impl.userSvc.Create(entity.User{
-			Email:    *params.UserInfo.Email,
-			Password: *params.UserInfo.Password,
-		})
-		if err != nil {
-			return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-
-		token, err := impl.authSvc.GenerateToken(user.ID)
-		if err != nil {
-			return operations.NewSignupDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-
-		return operations.NewSignupOK().WithPayload(&models.User{
-			ID:    user.ID,
-			Email: user.Email,
-		}).WithAuthenthication("Bearer " + token)
+		return impl.signup(params)
 	})
 
 	api.LoginHandler = operations.LoginHandlerFunc(func(params operations.LoginParams) middleware.Responder {
-		user, err := impl.userSvc.Login(*params.UserInfo.Email, *params.UserInfo.Password)
-		if err != nil {
-			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-		token, err := impl.authSvc.GenerateToken(user.ID)
-		if err != nil {
-			return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-
-		return operations.NewLoginOK().WithPayload(&models.User{
-			ID:    user.ID,
-			Email: user.Email,
-		}).WithAuthenthication("Bearer " + token)
+		return impl.login(params)
 	})
 
 	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams, _ interface{}) middleware.Responder {
-		return operations.NewScanProductsOK().WithPayload([]*models.ProductCount{
-			{
-				Count: 1,
-				Product: &models.Product{
-					ID:   "1",
-					Name: "ОВОЩ",
-				},
-			},
-		})
+		boughtAt := time.Now()
+		if params.ScanDate != nil {
+			boughtAt = time.Time(*params.ScanDate)
+		}
+		counts, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{BoughtAt: boughtAt})
+		if err != nil {
+			return operations.NewScanProductsDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+		}
+		return operations.NewScanProductsOK().WithPayload(toModelProductCount(counts))
 	})
 
 	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, _ interface{}) middleware.Responder {
-		return operations.NewScanCheckOK().WithPayload([]*models.ProductCount{
-			{
-				Count: 1,
-				Product: &models.Product{
-					ID:   "1",
-					Name: "ОВОЩ",
-				},
-			},
-		})
+		boughtAt := time.Now()
+		if params.ScanDate != nil {
+			boughtAt = time.Time(*params.ScanDate)
+		}
+		counts, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{BoughtAt: boughtAt})
+		if err != nil {
+			return operations.NewScanCheckDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+		}
+		return operations.NewScanProductsOK().WithPayload(toModelProductCount(counts))
 	})
 
 	api.GetProductHandler = operations.GetProductHandlerFunc(func(params operations.GetProductParams, _ interface{}) middleware.Responder {
-		product, err := impl.productSvc.ByID(params.ProductID)
-		if err != nil {
-			return operations.NewGetProductDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-
-		return operations.NewGetProductOK().WithPayload(toModelProduct(product))
+		return impl.getProduct(params)
 	})
 
 	api.UpdateProductHandler = operations.UpdateProductHandlerFunc(func(params operations.UpdateProductParams, id interface{}) middleware.Responder {
-		uID := id.(string)
-		params.Product.ID = params.ProductID
-		product, err := impl.productSvc.Update(toEntity(params.Product, uID))
-		if err != nil {
-			return operations.NewUpdateProductDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-		return operations.NewCreateProductOK().WithPayload(toModelProduct(product))
+		return impl.updateProduct(params, id.(string))
 	})
 
 	api.CreateProductHandler = operations.CreateProductHandlerFunc(func(params operations.CreateProductParams, id interface{}) middleware.Responder {
 		uID := id.(string)
-		product, err := impl.productSvc.Create(toEntity(params.Product, uID))
-		if err != nil {
-			return operations.NewCreateProductDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-		return operations.NewCreateProductOK().WithPayload(toModelProduct(product))
+		return impl.createProduct(params, uID)
 	})
 
 	api.ProductListHandler = operations.ProductListHandlerFunc(func(params operations.ProductListParams, id interface{}) middleware.Responder {
 		uID := id.(string)
-		products, err := impl.productSvc.List(repository.ProductListArgs{
-			UserID: &uID,
-			Date:   (*time.Time)(params.Date),
-		})
-		if err != nil {
-			return operations.NewProductListDefault(http.StatusInternalServerError).WithPayload(&models.Error{
-				Message: getStrPtr(err.Error()),
-			})
-		}
-		return operations.NewProductListOK().WithPayload(toModelProducts(products))
+		return impl.getProductList(params, uID)
 	})
 
 	api.PreServerShutdown = func() {}
@@ -191,10 +205,6 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Impl) http.Handler {
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
-}
-
-func getStrPtr(s string) *string {
-	return &s
 }
 
 func toModelProduct(product entity.Product) *models.Product {
@@ -207,7 +217,7 @@ func toModelProduct(product entity.Product) *models.Product {
 	}
 }
 
-func toEntity(product *models.Product, userID string) entity.Product {
+func toEntityProduct(product *models.Product, userID string) entity.Product {
 	boughAt := time.Time(product.BoughtAt)
 	return entity.Product{
 		ID:       product.ID,
@@ -217,6 +227,17 @@ func toEntity(product *models.Product, userID string) entity.Product {
 		UserID:   userID,
 		InStock:  product.InStock,
 	}
+}
+
+func toModelProductCount(counts []service.ProductCount) []*models.ProductCount {
+	res := make([]*models.ProductCount, 0, len(counts))
+	for i := range counts {
+		res = append(res, &models.ProductCount{
+			Count:   int64(counts[i].Count),
+			Product: toModelProduct(counts[i].Product),
+		})
+	}
+	return res
 }
 
 func toModelProducts(pp []entity.Product) []*models.Product {

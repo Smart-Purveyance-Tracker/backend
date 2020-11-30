@@ -115,6 +115,11 @@ paths:
           name: upfile
           type: file
           description: The file to upload.
+        - in: query
+          name: scanDate
+          type: string
+          format: "date-time"
+          description: Date when scan was done
   /scanCheck:
     post:
       operationId: "scanCheck"
@@ -140,6 +145,11 @@ paths:
           name: upfile
           type: file
           description: The file to upload.
+        - in: query
+          name: scanDate
+          type: string
+          format: "date-time"
+          description: Date when scan was done
 
   /product/{productID}:
     parameters:

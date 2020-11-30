@@ -75,7 +75,7 @@ func main() {
 	userRepo := repository.NewUserMongoDB(client)
 	userSvc := service.NewUserImpl(userRepo)
 	jwtSvc := auth.NewJWTService([]byte(e.JWTSecret))
-	server.SetHandler(apiimpl.ConfigureAPI(api, apiimpl.NewImpl(userSvc, jwtSvc, service.NewProductImpl(repository.NewProductMongoDB(client)))))
+	server.SetHandler(apiimpl.ConfigureAPI(api, apiimpl.NewServer(userSvc, jwtSvc, service.NewProductImpl(repository.NewProductMongoDB(client)))))
 
 	if err := server.Serve(); err != nil {
 		log.Panicln(err)
