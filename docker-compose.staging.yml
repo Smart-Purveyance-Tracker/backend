@@ -4,28 +4,28 @@ services:
   backend:
     image: illfate/smart-purveyance-api:latest # DON'T use latest
     ports:
-      - ${BE_PORT}:3000
+      - "${BE_PORT}:3000"
     environment:
-      - BE_PORT: ${BE_PORT}
-      - BE_HOST: ${BE_HOST}
-      - JWT_SECRET: ${JWT_SECRET}
-      - MONGO_URI: ${MONGO_URI}
-      - FOOD_DETECTOR_URI: ${FOOD_DETECTOR_URI}
+      - PORT=${BE_PORT}
+      - HOST=${BE_HOST}
+      - JWT_SECRET=${JWT_SECRET}
+      - MONGO_URI=${MONGO_URI}
+      - FOOD_DETECTOR_URI=${FOOD_DETECTOR_URI}
     networks:
       - backend
 
   food-detector:
     image: illfate/smart-purveyance-tracker-food-detector:tagname
-    environment:
-      - FD_PORT: ${FD_PORT}
-      - FD_HOST: ${FD_HOST}
-      - MODEL_PATH: ${MODEL_PATH}
-      - MODEL_CONFIG_PATH: ${MODEL_CONFIG_PATH}
-      - CLASS_NAMES_PATH: ${CLASS_NAMES_PATH}
-      - IMAGE_SIZE: ${IMAGE_SIZE}
-      - CONF_THRESH: ${CONF_THRESH}
-      - IOU_THRESH: ${IOU_THRESH}
-      - AUGMENT: ${AUGMENT}
+    # environment:
+    #  - FD_PORT: ${FD_PORT}
+    #  - FD_HOST: ${FD_HOST}
+    #  - MODEL_PATH: ${MODEL_PATH}
+    #  - MODEL_CONFIG_PATH: ${MODEL_CONFIG_PATH}
+    #  - CLASS_NAMES_PATH: ${CLASS_NAMES_PATH}
+    #  - IMAGE_SIZE: ${IMAGE_SIZE}
+    #  - CONF_THRESH: ${CONF_THRESH}
+    #  - IOU_THRESH: ${IOU_THRESH}
+    #  - AUGMENT: ${AUGMENT}
     networks:
       - backend
 
