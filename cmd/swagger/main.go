@@ -76,7 +76,7 @@ func main() {
 	userRepo := repository.NewUserMongoDB(client)
 	userSvc := service.NewUserImpl(userRepo)
 	jwtSvc := auth.NewJWTService([]byte(e.JWTSecret))
-	scanAdapter := service.NewProductScanAdapter(e.MongoURI)
+	scanAdapter := service.NewProductScanAdapter(e.FoodDetectorURI)
 	server.SetHandler(apiimpl.ConfigureAPI(api, apiimpl.NewServer(userSvc, jwtSvc, service.NewProductImpl(repository.NewProductMongoDB(client), scanAdapter))))
 
 	if err := server.Serve(); err != nil {

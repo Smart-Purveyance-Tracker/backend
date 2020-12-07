@@ -1,8 +1,11 @@
 package service
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"time"
 
@@ -58,9 +61,9 @@ type ProductCount struct {
 }
 
 type productResp struct {
-	Classification string
-	Confidence     float64
-	PixelLocation  []float64
+	Classification string    `json:"cls"`
+	Confidence     float64   `json:"conf"`
+	PixelLocation  []float64 `json:"xyxy"`
 }
 
 type ProductScanResponse struct {
@@ -86,8 +89,34 @@ func NewProductScanAdapter(uri string) *ProductScanAdapter {
 	}
 }
 
+func newfileUploadRequest(uri string, image io.Reader, paramName string) (*http.Request, error) {
+	fileContents, err := ioutil.ReadAll(image)
+	if err != nil {
+		return nil, err
+	}
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(paramName, paramName)
+	if err != nil {
+		return nil, err
+	}
+	part.Write(fileContents)
+
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", uri, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	return req, nil
+}
+
 func (a *ProductScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) {
-	req, err := http.NewRequest(http.MethodPost, "/process-image", image)
+	req, err := newfileUploadRequest(a.uri+"/process_image", image, "image")
 	if err != nil {
 		return ProductScanResponse{}, err
 	}

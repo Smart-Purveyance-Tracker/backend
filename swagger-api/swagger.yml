@@ -109,7 +109,7 @@ paths:
             $ref: '#/definitions/error'
       parameters:
         - in: formData
-          name: upfile
+          name: image
           type: file
           description: The file to upload.
         - in: query
@@ -264,6 +264,7 @@ definitions:
       boughtAt:
         type: string
         format: "date-time"
+        x-nullable: true
       inStock:
         type: boolean
 

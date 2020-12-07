@@ -297,7 +297,7 @@ func init() {
           {
             "type": "file",
             "description": "The file to upload.",
-            "name": "upfile",
+            "name": "image",
             "in": "formData"
           },
           {
@@ -413,7 +413,8 @@ func init() {
       "properties": {
         "boughtAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "x-nullable": true
         },
         "id": {
           "type": "string"
@@ -758,7 +759,7 @@ func init() {
           {
             "type": "file",
             "description": "The file to upload.",
-            "name": "upfile",
+            "name": "image",
             "in": "formData"
           },
           {
@@ -874,7 +875,8 @@ func init() {
       "properties": {
         "boughtAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "x-nullable": true
         },
         "id": {
           "type": "string"

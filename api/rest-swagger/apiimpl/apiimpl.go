@@ -163,11 +163,9 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		if params.ScanDate != nil {
 			boughtAt = time.Time(*params.ScanDate)
 		}
-		defer params.Upfile.Close()
-
 		resp, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{
 			BoughtAt: boughtAt,
-			Image:    params.Upfile,
+			Image:    params.Image,
 		})
 		if err != nil {
 			return operations.NewScanProductsDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
@@ -213,9 +211,14 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 }
 
 func toModelProduct(product entity.Product) *models.Product {
+	var t *strfmt.DateTime
+	if !product.BoughtAt.IsZero() {
+		tmp := strfmt.DateTime(product.BoughtAt)
+		t = &tmp
+	}
 	return &models.Product{
 		ID:       product.ID,
-		BoughtAt: strfmt.DateTime(product.BoughtAt),
+		BoughtAt: t,
 		InStock:  product.InStock,
 		Name:     product.Name,
 		Type:     product.Type,
@@ -223,12 +226,16 @@ func toModelProduct(product entity.Product) *models.Product {
 }
 
 func toEntityProduct(product *models.Product, userID string) entity.Product {
-	boughAt := time.Time(product.BoughtAt)
+	//boughAt := *time.Time(product.BoughtAt)
+	var t time.Time
+	if product.BoughtAt != nil {
+		t = time.Time(*product.BoughtAt)
+	}
 	return entity.Product{
 		ID:       product.ID,
 		Name:     product.Name,
 		Type:     product.Type,
-		BoughtAt: boughAt,
+		BoughtAt: t,
 		UserID:   userID,
 		InStock:  product.InStock,
 	}

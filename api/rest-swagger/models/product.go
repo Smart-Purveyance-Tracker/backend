@@ -21,7 +21,7 @@ type Product struct {
 
 	// bought at
 	// Format: date-time
-	BoughtAt strfmt.DateTime `json:"boughtAt,omitempty"`
+	BoughtAt *strfmt.DateTime `json:"boughtAt,omitempty"`
 
 	// id
 	ID string `json:"id,omitempty"`

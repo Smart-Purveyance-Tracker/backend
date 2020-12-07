@@ -33,14 +33,14 @@ type ScanProductsParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*The file to upload.
+	  In: formData
+	*/
+	Image io.ReadCloser
 	/*Date when scan was done
 	  In: query
 	*/
 	ScanDate *strfmt.DateTime
-	/*The file to upload.
-	  In: formData
-	*/
-	Upfile io.ReadCloser
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -62,25 +62,32 @@ func (o *ScanProductsParams) BindRequest(r *http.Request, route *middleware.Matc
 		}
 	}
 
+	image, imageHeader, err := r.FormFile("image")
+	if err != nil && err != http.ErrMissingFile {
+		res = append(res, errors.New(400, "reading file %q failed: %v", "image", err))
+	} else if err == http.ErrMissingFile {
+		// no-op for missing but optional file parameter
+	} else if err := o.bindImage(image, imageHeader); err != nil {
+		res = append(res, err)
+	} else {
+		o.Image = &runtime.File{Data: image, Header: imageHeader}
+	}
+
 	qScanDate, qhkScanDate, _ := qs.GetOK("scanDate")
 	if err := o.bindScanDate(qScanDate, qhkScanDate, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	upfile, upfileHeader, err := r.FormFile("upfile")
-	if err != nil && err != http.ErrMissingFile {
-		res = append(res, errors.New(400, "reading file %q failed: %v", "upfile", err))
-	} else if err == http.ErrMissingFile {
-		// no-op for missing but optional file parameter
-	} else if err := o.bindUpfile(upfile, upfileHeader); err != nil {
-		res = append(res, err)
-	} else {
-		o.Upfile = &runtime.File{Data: upfile, Header: upfileHeader}
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindImage binds file parameter Image.
+//
+// The only supported validations on files are MinLength and MaxLength
+func (o *ScanProductsParams) bindImage(file multipart.File, header *multipart.FileHeader) error {
 	return nil
 }
 
@@ -117,12 +124,5 @@ func (o *ScanProductsParams) validateScanDate(formats strfmt.Registry) error {
 	if err := validate.FormatOf("scanDate", "query", "date-time", o.ScanDate.String(), formats); err != nil {
 		return err
 	}
-	return nil
-}
-
-// bindUpfile binds file parameter Upfile.
-//
-// The only supported validations on files are MinLength and MaxLength
-func (o *ScanProductsParams) bindUpfile(file multipart.File, header *multipart.FileHeader) error {
 	return nil
 }
