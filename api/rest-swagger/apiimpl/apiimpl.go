@@ -163,6 +163,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		if params.ScanDate != nil {
 			boughtAt = time.Time(*params.ScanDate)
 		}
+		defer params.Image.Close()
 		resp, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{
 			BoughtAt: boughtAt,
 			Image:    params.Image,

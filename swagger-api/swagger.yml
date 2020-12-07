@@ -109,6 +109,7 @@ paths:
             $ref: '#/definitions/error'
       parameters:
         - in: formData
+          required: true
           name: image
           type: file
           description: The file to upload.

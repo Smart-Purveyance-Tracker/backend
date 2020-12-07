@@ -34,6 +34,7 @@ type ScanProductsParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*The file to upload.
+	  Required: true
 	  In: formData
 	*/
 	Image io.ReadCloser
@@ -63,11 +64,10 @@ func (o *ScanProductsParams) BindRequest(r *http.Request, route *middleware.Matc
 	}
 
 	image, imageHeader, err := r.FormFile("image")
-	if err != nil && err != http.ErrMissingFile {
+	if err != nil {
 		res = append(res, errors.New(400, "reading file %q failed: %v", "image", err))
-	} else if err == http.ErrMissingFile {
-		// no-op for missing but optional file parameter
 	} else if err := o.bindImage(image, imageHeader); err != nil {
+		// Required: true
 		res = append(res, err)
 	} else {
 		o.Image = &runtime.File{Data: image, Header: imageHeader}
