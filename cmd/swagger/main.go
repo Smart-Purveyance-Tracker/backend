@@ -21,8 +21,9 @@ import (
 )
 
 type envs struct {
-	MongoURI  string `envconfig:"MONGO_URI" required:"true"`
-	JWTSecret string `envconfig:"JWT_SECRET" required:"true"`
+	MongoURI        string `envconfig:"MONGO_URI" required:"true"`
+	JWTSecret       string `envconfig:"JWT_SECRET" required:"true"`
+	FoodDetectorURI string `envconfig:"FOOD_DETECTOR_URI" required:"true"`
 }
 
 func main() {
@@ -75,7 +76,8 @@ func main() {
 	userRepo := repository.NewUserMongoDB(client)
 	userSvc := service.NewUserImpl(userRepo)
 	jwtSvc := auth.NewJWTService([]byte(e.JWTSecret))
-	server.SetHandler(apiimpl.ConfigureAPI(api, apiimpl.NewServer(userSvc, jwtSvc, service.NewProductImpl(repository.NewProductMongoDB(client)))))
+	scanAdapter := service.NewProductScanAdapter(e.MongoURI)
+	server.SetHandler(apiimpl.ConfigureAPI(api, apiimpl.NewServer(userSvc, jwtSvc, service.NewProductImpl(repository.NewProductMongoDB(client), scanAdapter))))
 
 	if err := server.Serve(); err != nil {
 		log.Panicln(err)

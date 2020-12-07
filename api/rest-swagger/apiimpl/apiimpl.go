@@ -163,24 +163,29 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		if params.ScanDate != nil {
 			boughtAt = time.Time(*params.ScanDate)
 		}
-		counts, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{BoughtAt: boughtAt})
+		defer params.Upfile.Close()
+
+		resp, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{
+			BoughtAt: boughtAt,
+			Image:    params.Upfile,
+		})
 		if err != nil {
 			return operations.NewScanProductsDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
 		}
-		return operations.NewScanProductsOK().WithPayload(toModelProductCount(counts))
+		return operations.NewScanProductsOK().WithPayload(toScanResponse(resp))
 	})
 
-	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, _ interface{}) middleware.Responder {
-		boughtAt := time.Now()
-		if params.ScanDate != nil {
-			boughtAt = time.Time(*params.ScanDate)
-		}
-		counts, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{BoughtAt: boughtAt})
-		if err != nil {
-			return operations.NewScanCheckDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
-		}
-		return operations.NewScanProductsOK().WithPayload(toModelProductCount(counts))
-	})
+	//api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, _ interface{}) middleware.Responder {
+	//	boughtAt := time.Now()
+	//	if params.ScanDate != nil {
+	//		boughtAt = time.Time(*params.ScanDate)
+	//	}
+	//	counts, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{BoughtAt: boughtAt})
+	//	if err != nil {
+	//		return operations.NewScanCheckDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+	//	}
+	//	return operations.NewScanProductsOK().WithPayload(toModelProductCount(counts))
+	//})
 
 	api.GetProductHandler = operations.GetProductHandlerFunc(func(params operations.GetProductParams, _ interface{}) middleware.Responder {
 		return impl.getProduct(params)
@@ -229,15 +234,23 @@ func toEntityProduct(product *models.Product, userID string) entity.Product {
 	}
 }
 
-func toModelProductCount(counts []service.ProductCount) []*models.ProductCount {
-	res := make([]*models.ProductCount, 0, len(counts))
-	for i := range counts {
-		res = append(res, &models.ProductCount{
-			Count:   int64(counts[i].Count),
-			Product: toModelProduct(counts[i].Product),
+func toScanResponse(resp service.ProductScanResponse) *models.ScanResponse {
+	var res models.ScanResponse
+	for i := range resp.Products {
+		res.Products = append(res.Products, &models.Product{
+			Type: resp.Products[i].Type,
 		})
 	}
-	return res
+
+	for i := range resp.ProductCounts {
+		res.ProductCounts = append(res.ProductCounts, &models.ProductCount{
+			Product: &models.Product{
+				Type: resp.ProductCounts[i].Product.Type,
+			},
+			Count: int64(resp.ProductCounts[i].Count),
+		})
+	}
+	return &res
 }
 
 func toModelProducts(pp []entity.Product) []*models.Product {

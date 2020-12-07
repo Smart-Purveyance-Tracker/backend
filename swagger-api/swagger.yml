@@ -102,10 +102,7 @@ paths:
         200:
           description: ""
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/productCount'
-
+            $ref: '#/definitions/scanResponse'
         default:
           description: "error"
           schema:
@@ -278,6 +275,18 @@ definitions:
       product:
         type: object
         $ref: '#/definitions/product'
+
+  scanResponse:
+    type: object
+    properties:
+      products:
+        type: array
+        items:
+          $ref: '#/definitions/product'
+      productCounts:
+        type: array
+        items:
+          $ref: '#/definitions/productCount'
 
   error:
     type: object

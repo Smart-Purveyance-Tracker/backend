@@ -15,19 +15,26 @@ services:
       - backend
 
   food-detector:
-    image: illfate/smart-purveyance-tracker-food-detector:tagname
-    # environment:
-    #  - FD_PORT: ${FD_PORT}
-    #  - FD_HOST: ${FD_HOST}
-    #  - MODEL_PATH: ${MODEL_PATH}
-    #  - MODEL_CONFIG_PATH: ${MODEL_CONFIG_PATH}
-    #  - CLASS_NAMES_PATH: ${CLASS_NAMES_PATH}
-    #  - IMAGE_SIZE: ${IMAGE_SIZE}
-    #  - CONF_THRESH: ${CONF_THRESH}
-    #  - IOU_THRESH: ${IOU_THRESH}
-    #  - AUGMENT: ${AUGMENT}
+    image: vadbeg/food_detector:1.0
+    ports:
+      - "${FD_PORT}:3000"
+    environment:
+      - PORT=${FD_PORT}
+      - HOST=${FD_HOST}
+      - MODEL_PATH=${MODEL_PATH}
+      - MODEL_CONFIG_PATH=${MODEL_CONFIG_PATH}
+      - CLASS_NAMES_PATH=${CLASS_NAMES_PATH}
+      - IMAGE_SIZE=${IMAGE_SIZE}
+      - CONF_THRESH=${CONF_THRESH}
+      - IOU_THRESH=${IOU_THRESH}
+      - AUGMENT=${AUGMENT}
+    volumes:
+      - /root/backend/data:/data
     networks:
       - backend
 
 networks:
   backend:
+
+volumes:
+  data:

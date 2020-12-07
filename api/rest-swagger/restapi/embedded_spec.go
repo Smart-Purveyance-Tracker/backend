@@ -311,10 +311,7 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/productCount"
-              }
+              "$ref": "#/definitions/scanResponse"
             }
           },
           "default": {
@@ -441,6 +438,23 @@ func init() {
         "product": {
           "type": "object",
           "$ref": "#/definitions/product"
+        }
+      }
+    },
+    "scanResponse": {
+      "type": "object",
+      "properties": {
+        "productCounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/productCount"
+          }
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/product"
+          }
         }
       }
     },
@@ -758,10 +772,7 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/productCount"
-              }
+              "$ref": "#/definitions/scanResponse"
             }
           },
           "default": {
@@ -888,6 +899,23 @@ func init() {
         "product": {
           "type": "object",
           "$ref": "#/definitions/product"
+        }
+      }
+    },
+    "scanResponse": {
+      "type": "object",
+      "properties": {
+        "productCounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/productCount"
+          }
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/product"
+          }
         }
       }
     },
