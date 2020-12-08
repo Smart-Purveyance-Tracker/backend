@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -125,8 +126,13 @@ func (a *ProductScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) 
 		return ProductScanResponse{}, err
 	}
 	defer resp.Body.Close()
+	bb, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ProductScanResponse{}, err
+	}
+	log.Print(string(bb))
 	var products []productResp
-	err = json.NewDecoder(resp.Body).Decode(&products)
+	err = json.Unmarshal(bb, &products)
 	if err != nil {
 		return ProductScanResponse{}, err
 	}
