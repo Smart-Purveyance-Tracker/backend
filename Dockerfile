@@ -7,6 +7,6 @@ RUN apk update && apk upgrade && apk add --update alpine-sdk && \
 
 FROM scratch
 COPY --from=build /backend/bin/backend .
-COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 EXPOSE 3000
 CMD ["./backend"]
