@@ -244,11 +244,7 @@ func toEntityProduct(product *models.Product, userID string) entity.Product {
 
 func toScanResponse(resp service.ProductScanResponse) *models.ScanResponse {
 	var res models.ScanResponse
-	for i := range resp.Products {
-		res.Products = append(res.Products, &models.Product{
-			Type: resp.Products[i].Type,
-		})
-	}
+	res.Products = toModelProducts(resp.Products)
 
 	for i := range resp.ProductCounts {
 		res.ProductCounts = append(res.ProductCounts, &models.ProductCount{
