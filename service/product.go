@@ -140,7 +140,18 @@ func (a *ProductScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) 
 }
 
 func (p *ProductImpl) ScanProducts(args ScanProductsArgs) (ProductScanResponse, error) {
-	return p.productScan.Scan(args.Image)
+	resp, err := p.productScan.Scan(args.Image)
+	if err != nil {
+		return ProductScanResponse{}, err
+	}
+	for i := range resp.Products {
+		resp.Products[i].BoughtAt = args.BoughtAt
+		resp.Products[i], err = p.Create(resp.Products[i])
+		if err != nil {
+			return ProductScanResponse{}, err
+		}
+	}
+	return resp, nil
 }
 
 func toProducts(resp []productResp) ProductScanResponse {
