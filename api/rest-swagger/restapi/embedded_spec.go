@@ -475,7 +475,7 @@ func init() {
   "securityDefinitions": {
     "Bearer": {
       "type": "apiKey",
-      "name": "Authenthication",
+      "name": "Authorization",
       "in": "header"
     }
   }
@@ -938,7 +938,7 @@ func init() {
   "securityDefinitions": {
     "Bearer": {
       "type": "apiKey",
-      "name": "Authenthication",
+      "name": "Authorization",
       "in": "header"
     }
   }

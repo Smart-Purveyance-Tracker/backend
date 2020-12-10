@@ -71,9 +71,9 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 			return middleware.NotImplemented("operation UpdateProduct has not yet been implemented")
 		}),
 
-		// Applies when the "Authenthication" header is set
+		// Applies when the "Authorization" header is set
 		BearerAuth: func(token string) (interface{}, error) {
-			return nil, errors.NotImplemented("api key auth (Bearer) Authenthication from header param [Authenthication] has not yet been implemented")
+			return nil, errors.NotImplemented("api key auth (Bearer) Authorization from header param [Authorization] has not yet been implemented")
 		},
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
@@ -115,7 +115,7 @@ type SwaggerAPI struct {
 	JSONProducer runtime.Producer
 
 	// BearerAuth registers a function that takes a token and returns a principal
-	// it performs authentication based on an api key Authenthication provided in the header
+	// it performs authentication based on an api key Authorization provided in the header
 	BearerAuth func(string) (interface{}, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
@@ -219,7 +219,7 @@ func (o *SwaggerAPI) Validate() error {
 	}
 
 	if o.BearerAuth == nil {
-		unregistered = append(unregistered, "AuthenthicationAuth")
+		unregistered = append(unregistered, "AuthorizationAuth")
 	}
 
 	if o.CreateProductHandler == nil {

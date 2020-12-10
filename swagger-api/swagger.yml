@@ -6,7 +6,7 @@ info:
 securityDefinitions:
   Bearer:
     type: apiKey
-    name: Authenthication
+    name: Authorization
     in: header
 schemes:
   - http
