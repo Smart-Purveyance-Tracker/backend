@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/Smart-Purveyance-Tracker/backend/entity"
@@ -36,12 +37,17 @@ func (i *UserImpl) Create(user entity.User) (entity.User, error) {
 	return u, nil
 }
 
+var ErrIncorrectPwd = errors.New("incorrect password")
+
 func (i *UserImpl) Login(email, password string) (entity.User, error) {
 	user, err := i.userRepo.FindByEmail(email)
 	if err != nil {
 		return entity.User{}, err
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		return entity.User{}, ErrIncorrectPwd
+	}
 	if err != nil {
 		return entity.User{}, err
 	}

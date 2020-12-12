@@ -244,16 +244,28 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
         ],
         "summary": "Uploads a file.",
         "operationId": "scanCheck",
         "parameters": [
           {
-            "type": "file",
-            "description": "The file to upload.",
-            "name": "upfile",
-            "in": "formData"
+            "name": "image",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "body"
+              ],
+              "properties": {
+                "body": {
+                  "type": "string"
+                }
+              }
+            }
           },
           {
             "type": "string",
@@ -266,10 +278,7 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/productCount"
-              }
+              "$ref": "#/definitions/scanResponse"
             }
           },
           "default": {
@@ -718,16 +727,28 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
         ],
         "summary": "Uploads a file.",
         "operationId": "scanCheck",
         "parameters": [
           {
-            "type": "file",
-            "description": "The file to upload.",
-            "name": "upfile",
-            "in": "formData"
+            "name": "image",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "body"
+              ],
+              "properties": {
+                "body": {
+                  "type": "string"
+                }
+              }
+            }
           },
           {
             "type": "string",
@@ -740,10 +761,7 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/productCount"
-              }
+              "$ref": "#/definitions/scanResponse"
             }
           },
           "default": {

@@ -6,9 +6,14 @@ package operations
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ScanCheckHandlerFunc turns a function with the right signature into a scan check handler
@@ -68,4 +73,60 @@ func (o *ScanCheck) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// ScanCheckBody scan check body
+//
+// swagger:model ScanCheckBody
+type ScanCheckBody struct {
+
+	// body
+	// Required: true
+	Body *string `json:"body"`
+}
+
+// Validate validates this scan check body
+func (o *ScanCheckBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateBody(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *ScanCheckBody) validateBody(formats strfmt.Registry) error {
+
+	if err := validate.Required("image"+"."+"body", "body", o.Body); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this scan check body based on context it is used
+func (o *ScanCheckBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *ScanCheckBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *ScanCheckBody) UnmarshalBinary(b []byte) error {
+	var res ScanCheckBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

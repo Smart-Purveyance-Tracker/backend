@@ -38,8 +38,7 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
 
-		JSONConsumer:          runtime.JSONConsumer(),
-		MultipartformConsumer: runtime.DiscardConsumer,
+		JSONConsumer: runtime.JSONConsumer(),
 
 		JSONProducer: runtime.JSONProducer(),
 
@@ -106,9 +105,6 @@ type SwaggerAPI struct {
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
-	// MultipartformConsumer registers a consumer for the following mime types:
-	//   - multipart/form-data
-	MultipartformConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
@@ -210,9 +206,6 @@ func (o *SwaggerAPI) Validate() error {
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
-	if o.MultipartformConsumer == nil {
-		unregistered = append(unregistered, "MultipartformConsumer")
-	}
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
@@ -289,8 +282,6 @@ func (o *SwaggerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consum
 		switch mt {
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-		case "multipart/form-data":
-			result["multipart/form-data"] = o.MultipartformConsumer
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {

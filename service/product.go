@@ -20,11 +20,13 @@ type Product interface {
 	List(args repository.ProductListArgs) ([]entity.Product, error)
 	Update(product entity.Product) (entity.Product, error)
 	ScanProducts(args ScanProductsArgs) (ProductScanResponse, error)
+	ScanCheck(args ScanProductsArgs) (ProductScanResponse, error)
 }
 
 type ProductImpl struct {
 	productRepo repository.Product
 	productScan ScanAdapter
+	checkScan   ScanAdapter
 }
 
 func NewProductImpl(product repository.Product, productScan ScanAdapter) *ProductImpl {
@@ -67,6 +69,16 @@ type productResp struct {
 	PixelLocation  []float64 `json:"xyxy"`
 }
 
+type checkScanResp struct {
+	Date     string `json:"date"`
+	Products []struct {
+		Category string  `json:"category"`
+		FullName string  `json:"full_name"`
+		Price    float64 `json:"price"`
+	} `json:"products"`
+	Shop string `json:"shop"`
+}
+
 type ProductScanResponse struct {
 	Products      []entity.Product
 	ProductCounts []ProductCount
@@ -81,8 +93,22 @@ type ProductScanAdapter struct {
 	uri    string
 }
 
+type CheckScanAdapter struct {
+	client *http.Client
+	uri    string
+}
+
 func NewProductScanAdapter(uri string) *ProductScanAdapter {
 	return &ProductScanAdapter{
+		uri: uri,
+		client: &http.Client{
+			Timeout: time.Second * 10,
+		},
+	}
+}
+
+func NewCheckScanAdapter(uri string) *CheckScanAdapter {
+	return &CheckScanAdapter{
 		uri: uri,
 		client: &http.Client{
 			Timeout: time.Second * 10,
@@ -136,7 +162,56 @@ func (a *ProductScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) 
 	if err != nil {
 		return ProductScanResponse{}, err
 	}
-	return toProducts(products), nil
+	return a.toProducts(products), nil
+}
+
+func (a *CheckScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) {
+	req, err := newfileUploadRequest(a.uri+"/process_image", image, "image")
+	if err != nil {
+		return ProductScanResponse{}, err
+	}
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return ProductScanResponse{}, err
+	}
+	defer resp.Body.Close()
+	bb, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ProductScanResponse{}, err
+	}
+	log.Print(string(bb))
+	var checkResp checkScanResp
+	err = json.Unmarshal(bb, &checkResp)
+	if err != nil {
+		return ProductScanResponse{}, err
+	}
+	return a.toProducts(checkResp), nil
+}
+
+func (a *CheckScanAdapter) toProducts(resp checkScanResp) ProductScanResponse {
+	scanResp := ProductScanResponse{
+		Products:      make([]entity.Product, 0),
+		ProductCounts: make([]ProductCount, 0),
+	}
+	productToCount := make(map[string]int)
+
+	for _, p := range resp.Products {
+		product := entity.Product{
+			Name: p.FullName,
+			Type: p.Category,
+		}
+		scanResp.Products = append(scanResp.Products, product)
+		productToCount[p.Category]++
+	}
+	for product, count := range productToCount {
+		scanResp.ProductCounts = append(scanResp.ProductCounts, ProductCount{
+			Product: entity.Product{
+				Type: product,
+			},
+			Count: uint64(count),
+		})
+	}
+	return scanResp
 }
 
 func (p *ProductImpl) ScanProducts(args ScanProductsArgs) (ProductScanResponse, error) {
@@ -154,7 +229,22 @@ func (p *ProductImpl) ScanProducts(args ScanProductsArgs) (ProductScanResponse, 
 	return resp, nil
 }
 
-func toProducts(resp []productResp) ProductScanResponse {
+func (p *ProductImpl) ScanCheck(args ScanProductsArgs) (ProductScanResponse, error) {
+	resp, err := p.checkScan.Scan(args.Image)
+	if err != nil {
+		return ProductScanResponse{}, err
+	}
+	for i := range resp.Products {
+		resp.Products[i].BoughtAt = args.BoughtAt
+		resp.Products[i], err = p.Create(resp.Products[i])
+		if err != nil {
+			return ProductScanResponse{}, err
+		}
+	}
+	return resp, nil
+}
+
+func (ProductScanAdapter) toProducts(resp []productResp) ProductScanResponse {
 	scanResp := ProductScanResponse{
 		Products:      make([]entity.Product, 0, len(resp)),
 		ProductCounts: make([]ProductCount, 0, len(resp)),

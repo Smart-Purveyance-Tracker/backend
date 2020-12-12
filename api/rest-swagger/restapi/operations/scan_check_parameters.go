@@ -6,8 +6,8 @@ package operations
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"io"
-	"mime/multipart"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -33,14 +33,15 @@ type ScanCheckParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*
+	  Required: true
+	  In: body
+	*/
+	Image ScanCheckBody
 	/*Date when scan was done
 	  In: query
 	*/
 	ScanDate *strfmt.DateTime
-	/*The file to upload.
-	  In: formData
-	*/
-	Upfile io.ReadCloser
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -54,28 +55,36 @@ func (o *ScanCheckParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qs := runtime.Values(r.URL.Query())
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		if err != http.ErrNotMultipart {
-			return errors.New(400, "%v", err)
-		} else if err := r.ParseForm(); err != nil {
-			return errors.New(400, "%v", err)
-		}
-	}
+	if runtime.HasBody(r) {
+		defer r.Body.Close()
+		var body ScanCheckBody
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			if err == io.EOF {
+				res = append(res, errors.Required("image", "body", ""))
+			} else {
+				res = append(res, errors.NewParseError("image", "body", "", err))
+			}
+		} else {
+			// validate body object
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
 
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.Image = body
+			}
+		}
+	} else {
+		res = append(res, errors.Required("image", "body", ""))
+	}
 	qScanDate, qhkScanDate, _ := qs.GetOK("scanDate")
 	if err := o.bindScanDate(qScanDate, qhkScanDate, route.Formats); err != nil {
 		res = append(res, err)
-	}
-
-	upfile, upfileHeader, err := r.FormFile("upfile")
-	if err != nil && err != http.ErrMissingFile {
-		res = append(res, errors.New(400, "reading file %q failed: %v", "upfile", err))
-	} else if err == http.ErrMissingFile {
-		// no-op for missing but optional file parameter
-	} else if err := o.bindUpfile(upfile, upfileHeader); err != nil {
-		res = append(res, err)
-	} else {
-		o.Upfile = &runtime.File{Data: upfile, Header: upfileHeader}
 	}
 
 	if len(res) > 0 {
@@ -117,12 +126,5 @@ func (o *ScanCheckParams) validateScanDate(formats strfmt.Registry) error {
 	if err := validate.FormatOf("scanDate", "query", "date-time", o.ScanDate.String(), formats); err != nil {
 		return err
 	}
-	return nil
-}
-
-// bindUpfile binds file parameter Upfile.
-//
-// The only supported validations on files are MinLength and MaxLength
-func (o *ScanCheckParams) bindUpfile(file multipart.File, header *multipart.FileHeader) error {
 	return nil
 }

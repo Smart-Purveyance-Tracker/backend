@@ -133,29 +133,34 @@ paths:
       security:
         - Bearer: [ ]
       consumes:
-        - multipart/form-data
-      responses:
-        200:
-          description: ""
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/productCount'
+        - application/json
+      produces:
+        - "application/json"
 
-        default:
-          description: "error"
-          schema:
-            $ref: '#/definitions/error'
       parameters:
-        - in: formData
-          name: upfile
-          type: file
-          description: The file to upload.
+        - in: body
+          required: true
+          name: "image"
+          schema:
+            required:
+              - body
+            properties:
+              body:
+                type: string
         - in: query
           name: scanDate
           type: string
           format: "date-time"
           description: Date when scan was done
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: '#/definitions/scanResponse'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
 
   /product/{productID}:
     parameters:

@@ -38,6 +38,9 @@ func NewServer(userSvc service.User, authSvc auth.Service, productSvc service.Pr
 
 func (s *Server) login(params operations.LoginParams) middleware.Responder {
 	user, err := s.userSvc.Login(*params.UserInfo.Email, *params.UserInfo.Password)
+	if err == service.ErrIncorrectPwd {
+		return operations.NewLoginDefault(http.StatusUnauthorized).WithPayload(newAPIErr(err.Error()))
+	}
 	if err != nil {
 		return operations.NewLoginDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
 	}
@@ -180,17 +183,25 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		return operations.NewScanProductsOK().WithPayload(toScanResponse(resp))
 	})
 
-	//api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, _ interface{}) middleware.Responder {
-	//	boughtAt := time.Now()
-	//	if params.ScanDate != nil {
-	//		boughtAt = time.Time(*params.ScanDate)
-	//	}
-	//	counts, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{BoughtAt: boughtAt})
-	//	if err != nil {
-	//		return operations.NewScanCheckDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
-	//	}
-	//	return operations.NewScanProductsOK().WithPayload(toModelProductCount(counts))
-	//})
+	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, _ interface{}) middleware.Responder {
+		boughtAt := time.Now()
+		if params.ScanDate != nil {
+			boughtAt = time.Time(*params.ScanDate)
+		}
+		decodedImage, err := base64.StdEncoding.DecodeString(*params.Image.Body)
+		if err != nil {
+			return operations.NewCreateProductDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+		}
+		buff := bytes.NewBuffer(decodedImage)
+		resp, err := impl.productSvc.ScanCheck(service.ScanProductsArgs{
+			BoughtAt: boughtAt,
+			Image:    buff,
+		})
+		if err != nil {
+			return operations.NewScanProductsDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+		}
+		return operations.NewScanProductsOK().WithPayload(toScanResponse(resp))
+	})
 
 	api.GetProductHandler = operations.GetProductHandlerFunc(func(params operations.GetProductParams, _ interface{}) middleware.Responder {
 		return impl.getProduct(params)

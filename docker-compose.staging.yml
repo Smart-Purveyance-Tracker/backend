@@ -3,6 +3,8 @@ version: "3.4"
 services:
   backend:
     image: illfate/smart-purveyance-api:latest # DON'T use latest
+    hostname: backend
+    container_name: backend
     ports:
       - "${BE_PORT}:3000"
     environment:
@@ -11,13 +13,16 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - MONGO_URI=${MONGO_URI}
       - FOOD_DETECTOR_URI=${FOOD_DETECTOR_URI}
+      - CHECK_PARSER_URI=${FOOD_DETECTOR_URI}
     networks:
       - backend
 
   food-detector:
     image: vadbeg/food_detector:1.0
+    hostname: food-detector
+    container_name: food-detector
     ports:
-      - "${FD_PORT}:3000"
+      - "9001:3000"
     environment:
       - PORT=${FD_PORT}
       - HOST=${FD_HOST}
@@ -32,6 +37,16 @@ services:
       - /root/backend/data:/data
     networks:
       - backend
+
+  check-parser:
+    image: kopinhruk/check_parser:check_parser
+    hostname: check-parser
+    container_name: check-parser
+    ports:
+      - "9000:9000"
+    networks:
+      - backend
+
 
 networks:
   backend:
