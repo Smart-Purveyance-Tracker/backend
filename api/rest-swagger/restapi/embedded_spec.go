@@ -298,8 +298,7 @@ func init() {
             "type": "file",
             "description": "The file to upload.",
             "name": "image",
-            "in": "formData",
-            "required": true
+            "in": "formData"
           },
           {
             "type": "string",
@@ -761,8 +760,7 @@ func init() {
             "type": "file",
             "description": "The file to upload.",
             "name": "image",
-            "in": "formData",
-            "required": true
+            "in": "formData"
           },
           {
             "type": "string",
