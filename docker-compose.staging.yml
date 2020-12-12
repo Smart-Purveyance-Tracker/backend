@@ -13,7 +13,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - MONGO_URI=${MONGO_URI}
       - FOOD_DETECTOR_URI=${FOOD_DETECTOR_URI}
-      - CHECK_PARSER_URI=${FOOD_DETECTOR_URI}
+      - CHECK_SCANNER_URI=${CHECK_SCANNER_URI}
     networks:
       - backend
 
