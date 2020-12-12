@@ -24,6 +24,7 @@ type envs struct {
 	MongoURI        string `envconfig:"MONGO_URI" required:"true"`
 	JWTSecret       string `envconfig:"JWT_SECRET" required:"true"`
 	FoodDetectorURI string `envconfig:"FOOD_DETECTOR_URI" required:"true"`
+	CheckScannerURI string `envconfig:"CHECK_SCANNER_URI" required:"true"`
 }
 
 func main() {
@@ -77,7 +78,12 @@ func main() {
 	userSvc := service.NewUserImpl(userRepo)
 	jwtSvc := auth.NewJWTService([]byte(e.JWTSecret))
 	scanAdapter := service.NewProductScanAdapter(e.FoodDetectorURI)
-	server.SetHandler(apiimpl.ConfigureAPI(api, apiimpl.NewServer(userSvc, jwtSvc, service.NewProductImpl(repository.NewProductMongoDB(client), scanAdapter))))
+	checkScan := service.NewCheckScanAdapter(e.CheckScannerURI)
+	server.SetHandler(
+		apiimpl.ConfigureAPI(
+			api,
+			apiimpl.NewServer(userSvc, jwtSvc,
+				service.NewProductImpl(repository.NewProductMongoDB(client), scanAdapter, checkScan))))
 
 	if err := server.Serve(); err != nil {
 		log.Panicln(err)

@@ -15,6 +15,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/joho/godotenv v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/pkg/errors v0.8.1
 	github.com/rs/cors v1.7.0
 	go.mongodb.org/mongo-driver v1.3.4
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

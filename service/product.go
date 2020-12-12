@@ -29,10 +29,11 @@ type ProductImpl struct {
 	checkScan   ScanAdapter
 }
 
-func NewProductImpl(product repository.Product, productScan ScanAdapter) *ProductImpl {
+func NewProductImpl(product repository.Product, productScan ScanAdapter, checkScan ScanAdapter) *ProductImpl {
 	return &ProductImpl{
 		productRepo: product,
 		productScan: productScan,
+		checkScan:   checkScan,
 	}
 }
 
