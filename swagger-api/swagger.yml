@@ -97,7 +97,25 @@ paths:
       security:
         - Bearer: [ ]
       consumes:
-        - multipart/form-data
+        - application/json
+      produces:
+        - "application/json"
+
+      parameters:
+        - in: body
+          required: true
+          name: "image"
+          schema:
+            required:
+              - body
+            properties:
+              body:
+                type: string
+        - in: query
+          name: scanDate
+          type: string
+          format: "date-time"
+          description: Date when scan was done
       responses:
         200:
           description: ""
@@ -107,17 +125,7 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/error'
-      parameters:
-        - in: formData
-          required: false
-          name: image
-          type: file
-          description: The file to upload.
-        - in: query
-          name: scanDate
-          type: string
-          format: "date-time"
-          description: Date when scan was done
+
   /scanCheck:
     post:
       operationId: "scanCheck"

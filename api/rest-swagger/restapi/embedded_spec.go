@@ -289,16 +289,28 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
         ],
         "summary": "Uploads a file.",
         "operationId": "scanProducts",
         "parameters": [
           {
-            "type": "file",
-            "description": "The file to upload.",
             "name": "image",
-            "in": "formData"
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "body"
+              ],
+              "properties": {
+                "body": {
+                  "type": "string"
+                }
+              }
+            }
           },
           {
             "type": "string",
@@ -751,16 +763,28 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
         ],
         "summary": "Uploads a file.",
         "operationId": "scanProducts",
         "parameters": [
           {
-            "type": "file",
-            "description": "The file to upload.",
             "name": "image",
-            "in": "formData"
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "body"
+              ],
+              "properties": {
+                "body": {
+                  "type": "string"
+                }
+              }
+            }
           },
           {
             "type": "string",

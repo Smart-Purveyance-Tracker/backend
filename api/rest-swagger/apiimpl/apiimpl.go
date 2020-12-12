@@ -1,8 +1,9 @@
 package apiimpl
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -160,23 +161,18 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 	})
 
 	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams, _ interface{}) middleware.Responder {
-		mForm := params.HTTPRequest.MultipartForm
-		for name, files := range mForm.File {
-			log.Print(name)
-			for _, f := range files {
-				log.Print(f.Header)
-				log.Print(f.Size)
-				log.Print(f.Filename)
-			}
-		}
 		boughtAt := time.Now()
 		if params.ScanDate != nil {
 			boughtAt = time.Time(*params.ScanDate)
 		}
-		defer params.Image.Close()
+		decodedImage, err := base64.StdEncoding.DecodeString(*params.Image.Body)
+		if err != nil {
+			return operations.NewCreateProductDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+		}
+		buff := bytes.NewBuffer(decodedImage)
 		resp, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{
 			BoughtAt: boughtAt,
-			Image:    params.Image,
+			Image:    buff,
 		})
 		if err != nil {
 			return operations.NewScanProductsDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))

@@ -6,8 +6,8 @@ package operations
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"io"
-	"mime/multipart"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -33,10 +33,11 @@ type ScanProductsParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*The file to upload.
-	  In: formData
+	/*
+	  Required: true
+	  In: body
 	*/
-	Image io.ReadCloser
+	Image ScanProductsBody
 	/*Date when scan was done
 	  In: query
 	*/
@@ -54,25 +55,33 @@ func (o *ScanProductsParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	qs := runtime.Values(r.URL.Query())
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		if err != http.ErrNotMultipart {
-			return errors.New(400, "%v", err)
-		} else if err := r.ParseForm(); err != nil {
-			return errors.New(400, "%v", err)
+	if runtime.HasBody(r) {
+		defer r.Body.Close()
+		var body ScanProductsBody
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			if err == io.EOF {
+				res = append(res, errors.Required("image", "body", ""))
+			} else {
+				res = append(res, errors.NewParseError("image", "body", "", err))
+			}
+		} else {
+			// validate body object
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.Image = body
+			}
 		}
-	}
-
-	image, imageHeader, err := r.FormFile("image")
-	if err != nil && err != http.ErrMissingFile {
-		res = append(res, errors.New(400, "reading file %q failed: %v", "image", err))
-	} else if err == http.ErrMissingFile {
-		// no-op for missing but optional file parameter
-	} else if err := o.bindImage(image, imageHeader); err != nil {
-		res = append(res, err)
 	} else {
-		o.Image = &runtime.File{Data: image, Header: imageHeader}
+		res = append(res, errors.Required("image", "body", ""))
 	}
-
 	qScanDate, qhkScanDate, _ := qs.GetOK("scanDate")
 	if err := o.bindScanDate(qScanDate, qhkScanDate, route.Formats); err != nil {
 		res = append(res, err)
@@ -81,13 +90,6 @@ func (o *ScanProductsParams) BindRequest(r *http.Request, route *middleware.Matc
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-// bindImage binds file parameter Image.
-//
-// The only supported validations on files are MinLength and MaxLength
-func (o *ScanProductsParams) bindImage(file multipart.File, header *multipart.FileHeader) error {
 	return nil
 }
 
