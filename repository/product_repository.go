@@ -14,6 +14,7 @@ import (
 type Product interface {
 	Insert(product entity.Product) (entity.Product, error)
 	Find(id string) (entity.Product, error)
+	Delete(id string) error
 	Update(product entity.Product) (entity.Product, error)
 	List(args ProductListArgs) ([]entity.Product, error)
 }
@@ -49,6 +50,15 @@ func (p *ProductMongoDB) Find(id string) (entity.Product, error) {
 	}
 	err = p.collection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&product)
 	return product, err
+}
+
+func (p *ProductMongoDB) Delete(id string) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = p.collection.DeleteOne(context.TODO(), bson.M{"_id": objID})
+	return err
 }
 
 func (p *ProductMongoDB) Update(product entity.Product) (entity.Product, error) {

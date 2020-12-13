@@ -18,6 +18,7 @@ import (
 
 type Product interface {
 	ByID(id string) (entity.Product, error)
+	Delete(id string) error
 	Create(product entity.Product) (entity.Product, error)
 	List(args repository.ProductListArgs) ([]entity.Product, error)
 	Update(product entity.Product) (entity.Product, error)
@@ -41,6 +42,9 @@ func NewProductImpl(product repository.Product, productScan ScanAdapter, checkSc
 
 func (p *ProductImpl) ByID(id string) (entity.Product, error) {
 	return p.productRepo.Find(id)
+}
+func (p *ProductImpl) Delete(id string) error {
+	return p.productRepo.Delete(id)
 }
 
 func (p *ProductImpl) Create(product entity.Product) (entity.Product, error) {

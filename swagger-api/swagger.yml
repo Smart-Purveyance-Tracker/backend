@@ -190,6 +190,20 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/error'
+    delete:
+      operationId: "deleteProduct"
+      security:
+        - Bearer: [ ]
+      parameters:
+        - name: productID
+          in: path
+          type: string
+          required: true
+      responses:
+        default:
+            description: "error"
+            schema:
+              $ref: '#/definitions/error'
     post:
       operationId: "createProduct"
       security:

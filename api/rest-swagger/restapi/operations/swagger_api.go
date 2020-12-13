@@ -45,6 +45,9 @@ func NewSwaggerAPI(spec *loads.Document) *SwaggerAPI {
 		CreateProductHandler: CreateProductHandlerFunc(func(params CreateProductParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation CreateProduct has not yet been implemented")
 		}),
+		DeleteProductHandler: DeleteProductHandlerFunc(func(params DeleteProductParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteProduct has not yet been implemented")
+		}),
 		GetProductHandler: GetProductHandlerFunc(func(params GetProductParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation GetProduct has not yet been implemented")
 		}),
@@ -119,6 +122,8 @@ type SwaggerAPI struct {
 
 	// CreateProductHandler sets the operation handler for the create product operation
 	CreateProductHandler CreateProductHandler
+	// DeleteProductHandler sets the operation handler for the delete product operation
+	DeleteProductHandler DeleteProductHandler
 	// GetProductHandler sets the operation handler for the get product operation
 	GetProductHandler GetProductHandler
 	// GetStatusHandler sets the operation handler for the get status operation
@@ -217,6 +222,9 @@ func (o *SwaggerAPI) Validate() error {
 
 	if o.CreateProductHandler == nil {
 		unregistered = append(unregistered, "CreateProductHandler")
+	}
+	if o.DeleteProductHandler == nil {
+		unregistered = append(unregistered, "DeleteProductHandler")
 	}
 	if o.GetProductHandler == nil {
 		unregistered = append(unregistered, "GetProductHandler")
@@ -343,6 +351,10 @@ func (o *SwaggerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/product/{productID}"] = NewCreateProduct(o.context, o.CreateProductHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/product/{productID}"] = NewDeleteProduct(o.context, o.DeleteProductHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

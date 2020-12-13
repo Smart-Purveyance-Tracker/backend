@@ -232,6 +232,14 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		return impl.getProductList(params, uID)
 	})
 
+	api.DeleteProductHandler = operations.DeleteProductHandlerFunc(func(params operations.DeleteProductParams, id interface{}) middleware.Responder {
+		err := impl.productSvc.Delete(params.ProductID)
+		if err != nil {
+			return operations.NewDeleteProductDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
+		}
+		return operations.NewDeleteProductDefault(http.StatusOK)
+	})
+
 	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}

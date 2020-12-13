@@ -227,6 +227,30 @@ func init() {
           }
         }
       },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "deleteProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "productID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "parameters": [
         {
           "type": "string",
@@ -708,6 +732,30 @@ func init() {
               "$ref": "#/definitions/product"
             }
           },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "deleteProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "productID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
           "default": {
             "description": "error",
             "schema": {
