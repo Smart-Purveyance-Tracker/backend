@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -166,6 +167,8 @@ func (a *ProductScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) 
 	return a.toProducts(products), nil
 }
 
+var ErrFailedToScanCheck = errors.New("failed to scan check")
+
 func (a *CheckScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) {
 	req, err := newfileUploadRequest(a.uri+"/process_image", image, "image")
 	if err != nil {
@@ -176,6 +179,9 @@ func (a *CheckScanAdapter) Scan(image io.Reader) (ProductScanResponse, error) {
 		return ProductScanResponse{}, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusInternalServerError {
+		return ProductScanResponse{}, ErrFailedToScanCheck
+	}
 	bb, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ProductScanResponse{}, err
