@@ -350,7 +350,7 @@ func (o *SwaggerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/product/{productID}"] = NewCreateProduct(o.context, o.CreateProductHandler)
+	o.handlers["POST"]["/product"] = NewCreateProduct(o.context, o.CreateProductHandler)
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}

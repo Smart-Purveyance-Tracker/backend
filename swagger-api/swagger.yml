@@ -166,6 +166,31 @@ paths:
           schema:
             $ref: '#/definitions/error'
 
+  /product:
+    post:
+      operationId: "createProduct"
+      security:
+        - Bearer: [ ]
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: product
+          required: true
+          schema:
+            $ref: '#/definitions/product'
+          in: body
+      responses:
+        200:
+          description: "creates product"
+          schema:
+            $ref: '#/definitions/product'
+        default:
+          description: "error"
+          schema:
+            $ref: '#/definitions/error'
+
   /product/{productID}:
     parameters:
       - name: productID
@@ -204,29 +229,6 @@ paths:
             description: "error"
             schema:
               $ref: '#/definitions/error'
-    post:
-      operationId: "createProduct"
-      security:
-        - Bearer: [ ]
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - name: product
-          required: true
-          schema:
-            $ref: '#/definitions/product'
-          in: body
-      responses:
-        200:
-          description: "creates product"
-          schema:
-            $ref: '#/definitions/product'
-        default:
-          description: "error"
-          schema:
-            $ref: '#/definitions/error'
     put:
       operationId: "updateProduct"
       security:

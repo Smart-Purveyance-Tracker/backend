@@ -79,6 +79,46 @@ func init() {
         }
       }
     },
+    "/product": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "operationId": "createProduct",
+        "parameters": [
+          {
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "creates product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/product/list": {
       "get": {
         "security": [
@@ -177,44 +217,6 @@ func init() {
         "responses": {
           "200": {
             "description": "update product",
-            "schema": {
-              "$ref": "#/definitions/product"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "operationId": "createProduct",
-        "parameters": [
-          {
-            "name": "product",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/product"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "creates product",
             "schema": {
               "$ref": "#/definitions/product"
             }
@@ -592,6 +594,46 @@ func init() {
         }
       }
     },
+    "/product": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "operationId": "createProduct",
+        "parameters": [
+          {
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "creates product",
+            "schema": {
+              "$ref": "#/definitions/product"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/product/list": {
       "get": {
         "security": [
@@ -690,44 +732,6 @@ func init() {
         "responses": {
           "200": {
             "description": "update product",
-            "schema": {
-              "$ref": "#/definitions/product"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "operationId": "createProduct",
-        "parameters": [
-          {
-            "name": "product",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/product"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "creates product",
             "schema": {
               "$ref": "#/definitions/product"
             }
