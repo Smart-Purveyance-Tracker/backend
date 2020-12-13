@@ -59,6 +59,7 @@ type ScanProductsArgs struct {
 	BoughtAt time.Time
 	Type     string
 	Image    io.Reader
+	UserID   string
 }
 
 type ProductCount struct {
@@ -234,6 +235,8 @@ func (p *ProductImpl) ScanProducts(args ScanProductsArgs) (ProductScanResponse, 
 	}
 	for i := range resp.Products {
 		resp.Products[i].BoughtAt = args.BoughtAt
+		resp.Products[i].UserID = args.UserID
+		resp.Products[i].InStock = true
 		resp.Products[i], err = p.Create(resp.Products[i])
 		if err != nil {
 			return ProductScanResponse{}, err
@@ -245,10 +248,15 @@ func (p *ProductImpl) ScanProducts(args ScanProductsArgs) (ProductScanResponse, 
 func (p *ProductImpl) ScanCheck(args ScanProductsArgs) (ProductScanResponse, error) {
 	resp, err := p.checkScan.Scan(args.Image)
 	if err != nil {
+		if strings.Contains(err.Error(), "Client.Timeout exceeded") {
+			return ProductScanResponse{}, ErrBusyServer
+		}
 		return ProductScanResponse{}, err
 	}
 	for i := range resp.Products {
 		resp.Products[i].BoughtAt = args.BoughtAt
+		resp.Products[i].UserID = args.UserID
+		resp.Products[i].InStock = true
 		resp.Products[i], err = p.Create(resp.Products[i])
 		if err != nil {
 			return ProductScanResponse{}, err

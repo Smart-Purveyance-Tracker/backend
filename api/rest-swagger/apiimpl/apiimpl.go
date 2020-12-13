@@ -163,7 +163,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		return impl.login(params)
 	})
 
-	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams, _ interface{}) middleware.Responder {
+	api.ScanProductsHandler = operations.ScanProductsHandlerFunc(func(params operations.ScanProductsParams, id interface{}) middleware.Responder {
 		boughtAt := time.Now()
 		if params.ScanDate != nil {
 			boughtAt = time.Time(*params.ScanDate)
@@ -176,6 +176,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		resp, err := impl.productSvc.ScanProducts(service.ScanProductsArgs{
 			BoughtAt: boughtAt,
 			Image:    buff,
+			UserID:   id.(string),
 		})
 		if err == service.ErrBusyServer {
 			return operations.NewScanProductsDefault(http.StatusGatewayTimeout).WithPayload(newAPIErr(err.Error()))
@@ -186,7 +187,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		return operations.NewScanProductsOK().WithPayload(toScanResponse(resp))
 	})
 
-	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, _ interface{}) middleware.Responder {
+	api.ScanCheckHandler = operations.ScanCheckHandlerFunc(func(params operations.ScanCheckParams, id interface{}) middleware.Responder {
 		boughtAt := time.Now()
 		if params.ScanDate != nil {
 			boughtAt = time.Time(*params.ScanDate)
@@ -199,6 +200,7 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 		resp, err := impl.productSvc.ScanCheck(service.ScanProductsArgs{
 			BoughtAt: boughtAt,
 			Image:    buff,
+			UserID:   id.(string),
 		})
 		if err == service.ErrBusyServer {
 			return operations.NewScanProductsDefault(http.StatusGatewayTimeout).WithPayload(newAPIErr(err.Error()))
