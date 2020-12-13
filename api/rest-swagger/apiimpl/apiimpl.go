@@ -177,6 +177,9 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 			BoughtAt: boughtAt,
 			Image:    buff,
 		})
+		if err == service.ErrBusyServer {
+			return operations.NewScanProductsDefault(http.StatusGatewayTimeout).WithPayload(newAPIErr(err.Error()))
+		}
 		if err != nil {
 			return operations.NewScanProductsDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
 		}
@@ -197,6 +200,9 @@ func ConfigureAPI(api *operations.SwaggerAPI, impl *Server) http.Handler {
 			BoughtAt: boughtAt,
 			Image:    buff,
 		})
+		if err == service.ErrBusyServer {
+			return operations.NewScanProductsDefault(http.StatusGatewayTimeout).WithPayload(newAPIErr(err.Error()))
+		}
 		if err == service.ErrFailedToScanCheck {
 			return operations.NewScanProductsDefault(http.StatusInternalServerError).WithPayload(newAPIErr(err.Error()))
 		}

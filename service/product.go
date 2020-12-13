@@ -9,6 +9,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Smart-Purveyance-Tracker/backend/entity"
@@ -221,9 +222,14 @@ func (a *CheckScanAdapter) toProducts(resp checkScanResp) ProductScanResponse {
 	return scanResp
 }
 
+var ErrBusyServer = errors.New("server is to busy")
+
 func (p *ProductImpl) ScanProducts(args ScanProductsArgs) (ProductScanResponse, error) {
 	resp, err := p.productScan.Scan(args.Image)
 	if err != nil {
+		if strings.Contains(err.Error(), "Client.Timeout exceeded") {
+			return ProductScanResponse{}, ErrBusyServer
+		}
 		return ProductScanResponse{}, err
 	}
 	for i := range resp.Products {
