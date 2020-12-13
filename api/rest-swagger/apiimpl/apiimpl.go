@@ -262,19 +262,8 @@ func toEntityProduct(product *models.Product, userID string) entity.Product {
 	}
 }
 
-func toScanResponse(resp service.ProductScanResponse) *models.ScanResponse {
-	var res models.ScanResponse
-	res.Products = toModelProducts(resp.Products)
-
-	for i := range resp.ProductCounts {
-		res.ProductCounts = append(res.ProductCounts, &models.ProductCount{
-			Product: &models.Product{
-				Type: resp.ProductCounts[i].Product.Type,
-			},
-			Count: int64(resp.ProductCounts[i].Count),
-		})
-	}
-	return &res
+func toScanResponse(resp service.ProductScanResponse) []*models.Product {
+	return toModelProducts(resp.Products)
 }
 
 func toModelProducts(pp []entity.Product) []*models.Product {

@@ -25,7 +25,7 @@ type ScanCheckOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.ScanResponse `json:"body,omitempty"`
+	Payload []*models.Product `json:"body,omitempty"`
 }
 
 // NewScanCheckOK creates ScanCheckOK with default headers values
@@ -35,13 +35,13 @@ func NewScanCheckOK() *ScanCheckOK {
 }
 
 // WithPayload adds the payload to the scan check o k response
-func (o *ScanCheckOK) WithPayload(payload *models.ScanResponse) *ScanCheckOK {
+func (o *ScanCheckOK) WithPayload(payload []*models.Product) *ScanCheckOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the scan check o k response
-func (o *ScanCheckOK) SetPayload(payload *models.ScanResponse) {
+func (o *ScanCheckOK) SetPayload(payload []*models.Product) {
 	o.Payload = payload
 }
 
@@ -49,11 +49,14 @@ func (o *ScanCheckOK) SetPayload(payload *models.ScanResponse) {
 func (o *ScanCheckOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
+	payload := o.Payload
+	if payload == nil {
+		// return empty array
+		payload = make([]*models.Product, 0, 50)
+	}
+
+	if err := producer.Produce(rw, payload); err != nil {
+		panic(err) // let the recovery middleware deal with this
 	}
 }
 

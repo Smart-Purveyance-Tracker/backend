@@ -278,7 +278,10 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/scanResponse"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
             }
           },
           "default": {
@@ -332,7 +335,10 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/scanResponse"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
             }
           },
           "default": {
@@ -761,7 +767,10 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/scanResponse"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
             }
           },
           "default": {
@@ -815,7 +824,10 @@ func init() {
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/scanResponse"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/product"
+              }
             }
           },
           "default": {
